@@ -2,7 +2,7 @@ import argparse
 import signal
 import time
 import datetime as dt
-from ..weather import BME280, create_database, insert_row
+from weather import BME280, create_database, insert_row
 
 STOP = False
 
