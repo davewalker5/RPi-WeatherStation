@@ -5,6 +5,9 @@ export PYTHONPATH="$PROJECT_FOLDER/src"
 export BUS_NUMBER=0
 export ADDR=0x76
 
+# Make sure the data folder exists so the database can be created if needed
+mkdir -p "$PROJECT_FOLDER/data"
+
 echo
 echo "Project Root : $PROJECT_FOLDER"
 echo "Bus Number   : $BUS_NUMBER"
