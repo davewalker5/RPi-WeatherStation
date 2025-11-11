@@ -4,6 +4,9 @@ from http.server import ThreadingHTTPServer
 from weather import BME280, create_database, insert_row, RequestHandler
 
 
+STOP = None
+
+
 def main():
     global cur
 
