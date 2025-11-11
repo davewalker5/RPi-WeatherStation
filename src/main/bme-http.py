@@ -16,6 +16,7 @@ def main():
     ap.add_argument("--bus", type=int, default=1)
     ap.add_argument("--addr", default="0x76")
     ap.add_argument("--db", default=None, help="optional SQLite path to enable /api/last")
+    ap.add_argument("--table", default="readings", help="Table name to insert into")
     args = ap.parse_args()
 
     addr_hex = int(args.addr, 16)
@@ -31,6 +32,7 @@ def main():
 
     RequestHandler.sensor = sensor
     RequestHandler.db_path = args.db
+    RequestHandler.table = args.table
     RequestHandler.bus = args.bus
     RequestHandler.addr = args.addr
 

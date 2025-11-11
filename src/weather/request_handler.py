@@ -9,6 +9,7 @@ class RequestHandler(BaseHTTPRequestHandler):
     # Injected at server init:
     sensor: BME280 = None
     db_path: str | None = None
+    db_table: str | None = None
     bus: int | None = None
     addr: str | None = None
 
@@ -31,7 +32,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         if self.path.startswith("/api/now"):
             try:
                 t, p, h = self.sensor.read()
-                insert_row(self.db_path, self.bus, self.addr, now_iso, t, p, h)
+                insert_row(self.db_path, self.db_table, self.bus, self.addr, now_iso, t, p, h)
                 return self._json(200, {
                     "time_utc": now_iso,
                     "temperature_c": round(t, 2),

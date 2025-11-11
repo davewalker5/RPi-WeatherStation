@@ -21,10 +21,10 @@ def sample_sensor(sensor, db_path, table_name, bus, addr):
 def main():
     ap = argparse.ArgumentParser(description="BME280 → SQLite logger")
     ap.add_argument("--db", default="bme280.db", help="SQLite database path")
+    ap.add_argument("--table", default="readings", help="Table name to insert into")
     ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
     ap.add_argument("--bus", type=int, default=0, help="I2C bus number (0 or 1 on Pi 1B)")
     ap.add_argument("--addr", default="0x76", help="I2C address (0x76 or 0x77)")
-    ap.add_argument("--table", default="readings", help="Table name to insert into")
     ap.add_argument("--once", action="store_true", help="Take one reading and exit")
     args = ap.parse_args()
 
