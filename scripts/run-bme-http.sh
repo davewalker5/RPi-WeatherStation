@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 PROJECT_FOLDER=$( cd "$( dirname "$0" )/.." && pwd )
-BUS_NUMBER=0
-ADDR=0x76
+. "$PROJECT_ROOT/config.sh"
 
 python3 "$PROJECT_FOLDER/src/bme280-http.py" \
     --bus $BUS_NUMBER \

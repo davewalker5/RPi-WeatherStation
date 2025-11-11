@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 PROJECT_FOLDER=$( cd "$( dirname "$0" )/.." && pwd )
-BUS_NUMBER=0
-ADDR=0x76
+. "$PROJECT_ROOT/config.sh"
 
 export PYTHONPATH="$PROJECT_FOLDER/src"
 
