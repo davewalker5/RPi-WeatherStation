@@ -32,7 +32,7 @@ def main():
 
     RequestHandler.sensor = sensor
     RequestHandler.db_path = args.db
-    RequestHandler.table = args.table
+    RequestHandler.db_table = args.table
     RequestHandler.bus = args.bus
     RequestHandler.addr = args.addr
 
