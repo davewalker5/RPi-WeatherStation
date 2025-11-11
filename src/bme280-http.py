@@ -10,7 +10,7 @@ Endpoints:
 Usage examples:
   python3 bme280_http.py --port 8080
   python3 bme280_http.py --addr 0x77 --bus 0 --port 8000
-  python3 bme280_http.py --db bme280.sqlite --port 8080
+  python3 bme280_http.py --db bme280.db --port 8080
 """
 
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -19,7 +19,6 @@ import datetime as dt
 import json
 import signal
 import sqlite3
-import sys
 import time
 from smbus2 import SMBus
 
@@ -107,11 +106,59 @@ class BME280:
 
         return t_c, p_hpa, rh
 
+# ---------------------------- SQLite persistence -----------------------------
+
+CREATE_SQL = """
+CREATE TABLE IF NOT EXISTS readings (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts_utc        TEXT NOT NULL,               -- ISO8601 UTC
+    temperature_c REAL NOT NULL,
+    pressure_hpa  REAL NOT NULL,
+    humidity_pct  REAL NOT NULL,
+    bus           INTEGER NOT NULL,
+    addr_hex      TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_readings_ts ON readings(ts_utc);
+"""
+
+INSERT_SQL = """
+INSERT INTO readings (ts_utc, temperature_c, pressure_hpa, humidity_pct, bus, addr_hex)
+VALUES (?, ?, ?, ?, ?, ?);
+"""
+
+QUERY_LAST_SQL = """
+SELECT ts_utc, temperature_c, pressure_hpa, humidity_pct
+FROM readings ORDER BY id DESC LIMIT 1;
+"""
+
+def ensure_db(db_path):
+    print(f"Ensuring database {db_path} exists")
+    con = sqlite3.connect(db_path)
+    con.executescript(CREATE_SQL)
+    con.commit()
+    con.close()
+
+def insert_row(db_path, bus, addr, ts, t, p, h):
+    con = sqlite3.connect(db_path)
+    cur = con.cursor()
+    cur.execute(INSERT_SQL, (ts, t, p, h, bus, addr))
+    con.commit()
+    con.close()
+
+def query_last_row(db_path):
+    con = sqlite3.connect(db_path)
+    con.row_factory = sqlite3.Row
+    row = con.execute(QUERY_LAST_SQL).fetchone()
+    con.close()
+    return row
+
 # ------------------------- HTTP handler ------------------------- #
 class Handler(BaseHTTPRequestHandler):
     # Injected at server init:
     sensor: BME280 = None
     db_path: str | None = None
+    bus: int | None = None
+    addr: str | None = None
 
     def _json(self, status: int, payload: dict):
         body = json.dumps(payload, separators=(",", ":")).encode("utf-8")
@@ -126,12 +173,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         now_iso = dt.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
 
-        if self.path.startswith("/healthz"):
+        if self.path.startswith("/health"):
             return self._json(200, {"status": "ok", "time": now_iso})
 
         if self.path.startswith("/api/now"):
             try:
                 t, p, h = self.sensor.read()
+                insert_row(self.db_path, self.bus, self.addr, now_iso, t, p, h)
                 return self._json(200, {
                     "time_utc": now_iso,
                     "temperature_c": round(t, 2),
@@ -145,13 +193,7 @@ class Handler(BaseHTTPRequestHandler):
             if not self.db_path:
                 return self._json(400, {"error": "no --db specified on server"})
             try:
-                con = sqlite3.connect(self.db_path)
-                con.row_factory = sqlite3.Row
-                row = con.execute(
-                    "SELECT ts_utc, temperature_c, pressure_hpa, humidity_pct "
-                    "FROM readings ORDER BY id DESC LIMIT 1"
-                ).fetchone()
-                con.close()
+                row = query_last_row(self.db_path)
                 if not row:
                     return self._json(404, {"error": "no rows"})
                 return self._json(200, {
@@ -172,6 +214,8 @@ class Handler(BaseHTTPRequestHandler):
 
 # ------------------------- Main ------------------------- #
 def main():
+    global cur
+
     ap = argparse.ArgumentParser(description="BME280 JSON HTTP server")
     ap.add_argument("--port", type=int, default=8080)
     ap.add_argument("--host", default="127.0.0.1", help="bind address (use 0.0.0.0 to expose on LAN)")
@@ -183,6 +227,8 @@ def main():
     addr_hex = int(args.addr, 16)
     sensor = BME280(bus=args.bus, address=addr_hex)
 
+    ensure_db(args.db)
+
     def _stop(signum, frame):
         global STOP; STOP = True
 
@@ -191,6 +237,8 @@ def main():
 
     Handler.sensor = sensor
     Handler.db_path = args.db
+    Handler.bus = args.bus
+    Handler.addr = args.addr
 
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"Serving on http://{args.host}:{args.port}  (bus={args.bus} addr={hex(addr_hex)})")
