@@ -8,7 +8,7 @@
 
 ## About
 
-__Under Construction__
+_Under Construction_
 
 The BME280 integer compensation maths follows the [Bosch BME280 datasheet](https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf) reference algorithm.
 
@@ -27,3 +27,4 @@ To file issues or suggestions, please use the [Issues](https://github.com/davewa
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
