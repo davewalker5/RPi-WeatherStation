@@ -22,6 +22,7 @@ def main():
     ap.add_argument("--addr", default="0x76")
     ap.add_argument("--db", default=None, help="optional SQLite path to enable /api/last")
     ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
+    ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
     args = ap.parse_args()
 
     # Install signal handlers for graceful stop
@@ -33,7 +34,7 @@ def main():
     sensor = BME280(bus=args.bus, address=addr)
 
     # Create the database access wrapper
-    database = Database(args.bus, args.addr, args.db)
+    database = Database(args.db, args.retention, args.bus, args.addr)
     database.create_database()
 
     # Create and start the sampler

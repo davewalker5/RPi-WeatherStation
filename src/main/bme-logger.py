@@ -28,6 +28,7 @@ def sample_sensors(sensor, database):
 def main():
     ap = argparse.ArgumentParser(description="BME280 → SQLite logger")
     ap.add_argument("--db", default="bme280.db", help="SQLite database path")
+    ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
     ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
     ap.add_argument("--bus", type=int, default=0, help="I2C bus number (0 or 1 on Pi 1B)")
     ap.add_argument("--addr", default="0x76", help="I2C address (0x76 or 0x77)")
@@ -43,7 +44,7 @@ def main():
     sensor = BME280(bus=args.bus, address=addr)
 
     # Create the database access wrapper
-    database = Database(args.bus, args.addr, args.db)
+    database = Database(args.db, args.retention, args.bus, args.addr)
     database.create_database()
 
     # If one-shot has been specified, sample the sensor, display the results and exit
@@ -60,8 +61,11 @@ def main():
     # Set up for readings at specified intervals
     next_t = time.monotonic()
     while not STOP:
-        # Take the next readings
         try:
+            # Purge old data
+            database.purge()
+
+            # Take the next readings
             sample_sensors(sensor, database)
         except OSError as ex:
             ts = dt.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"

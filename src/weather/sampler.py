@@ -20,6 +20,7 @@ class Sampler(threading.Thread):
         self.stop = threading.Event()
         self.latest = None
         self._lock = threading.Lock()
+        self.last_purged = None
 
     def _sample_sensors(self):
         """
@@ -40,6 +41,9 @@ class Sampler(threading.Thread):
         logging.info(f"Sampler started: interval={self.interval:.3f} s")
         while not self.stop.is_set():
             try:
+                # Purge old data
+                self.database.purge()
+
                 # Take the next reading and cache it as the latest reading
                 timestamp, temperature, pressure, humidity = self._sample_sensors()
                 with self._lock:

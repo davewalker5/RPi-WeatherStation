@@ -8,7 +8,7 @@ Type=simple
 WorkingDirectory=/opt/weather
 EnvironmentFile=/opt/weather/weather.env
 ExecStart=/usr/bin/python3 -m main.bme-http \
-  --db ${DB_PATH} --bus ${BUS} --addr ${ADDR} \
+  --db ${DB_PATH} --retention ${RETENTION} --bus ${BUS} --addr ${ADDR} \
   --interval ${INTERVAL} --host ${HOST} --port ${PORT}
 
 Restart=on-failure
