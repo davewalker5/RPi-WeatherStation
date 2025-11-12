@@ -1,17 +1,17 @@
 import argparse
 import signal
+import threading
 from http.server import ThreadingHTTPServer
-from weather import BME280, Database, RequestHandler
+from weather import BME280, Database, RequestHandler, Sampler
 
-
-STOP = False
+stop = None
 
 def _sig_handler(signum, frame):
     """
-    Signal handler to break out of the request handler loop
+    Signal handler to signal stop to the handler and HTTP server
     """
-    global STOP
-    STOP = True
+    global stop
+    stop.set()
 
 
 def main():
@@ -21,6 +21,7 @@ def main():
     ap.add_argument("--bus", type=int, default=1)
     ap.add_argument("--addr", default="0x76")
     ap.add_argument("--db", default=None, help="optional SQLite path to enable /api/last")
+    ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
     args = ap.parse_args()
 
     # Install signal handlers for graceful stop
@@ -35,12 +36,17 @@ def main():
     database = Database(args.bus, args.addr, args.db)
     database.create_database()
 
+    # Create and start the sampler
+    sampler = Sampler(sensor, database, args.interval)
+    sampler.start()
+
     # Set up the request handler
-    RequestHandler.sensor = sensor
-    RequestHandler.database = database
+    RequestHandler.sampler = sampler
 
     # Create the server
     server = ThreadingHTTPServer((args.host, args.port), RequestHandler)
+    global stop
+    stop = threading.Event()
 
     print()
     print(f"BME280 is on bus {args.bus} at address {hex(addr)}")
@@ -50,7 +56,7 @@ def main():
 
     # Enter the request handling loop
     try:
-        while not STOP:
+        while not stop.is_set():
             server.handle_request()
     finally:
         try:

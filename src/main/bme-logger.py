@@ -19,10 +19,10 @@ def sample_sensors(sensor, database):
     """
     Sample the BME280 sensors, write the results to the database and echo them on the terminal
     """
-    t, p, h = sensor.read()
-    ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-    database.insert_row(ts, t, p, h)
-    print(f"{ts}  T={t:.2f}°C  P={p:.2f} hPa  H={h:.2f}%")
+    temperature, pressure, humidity = sensor.read()
+    timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
+    database.insert_row(timestamp, temperature, pressure, humidity)
+    print(f"{timestamp}  T={temperature:.2f}°C  P={pressure:.2f} hPa  H={humidity:.2f}%")
 
 
 def main():
