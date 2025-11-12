@@ -3,7 +3,7 @@ from smbus2 import SMBus
 
 
 class BME280:
-    def __init__(self, bus=0, address=0x76):
+    def __init__(self, bus, address):
         self.busnum = bus
         self.addr = address
         self.bus = SMBus(bus)

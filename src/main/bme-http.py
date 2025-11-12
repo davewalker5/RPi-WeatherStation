@@ -1,45 +1,51 @@
 import argparse
 import signal
 from http.server import ThreadingHTTPServer
-from weather import BME280, create_database, insert_row, RequestHandler
+from weather import BME280, Database, RequestHandler
 
 
-STOP = None
+STOP = False
+
+def _sig_handler(signum, frame):
+    """
+    Signal handler to break out of the request handler loop
+    """
+    global STOP
+    STOP = True
 
 
 def main():
-    global cur
-
     ap = argparse.ArgumentParser(description="BME280 JSON HTTP server")
     ap.add_argument("--port", type=int, default=8080)
     ap.add_argument("--host", default="127.0.0.1", help="bind address (use 0.0.0.0 to expose on LAN)")
     ap.add_argument("--bus", type=int, default=1)
     ap.add_argument("--addr", default="0x76")
     ap.add_argument("--db", default=None, help="optional SQLite path to enable /api/last")
-    ap.add_argument("--table", default="readings", help="Table name to insert into")
     args = ap.parse_args()
 
-    addr_hex = int(args.addr, 16)
-    sensor = BME280(bus=args.bus, address=addr_hex)
+    # Install signal handlers for graceful stop
+    signal.signal(signal.SIGINT, _sig_handler)
+    signal.signal(signal.SIGTERM, _sig_handler)
 
-    create_database(args.db)
+    # Create the wrapper to query the BME280
+    addr = int(args.addr, 16)
+    sensor = BME280(bus=args.bus, address=addr)
 
-    def _stop(signum, frame):
-        global STOP; STOP = True
+    # Create the database access wrapper
+    database = Database(args.bus, args.addr, args.db)
+    database.create_database()
 
-    signal.signal(signal.SIGINT, _stop)
-    signal.signal(signal.SIGTERM, _stop)
-
+    # Set up the request handler
     RequestHandler.sensor = sensor
-    RequestHandler.db_path = args.db
-    RequestHandler.db_table = args.table
-    RequestHandler.bus = args.bus
-    RequestHandler.addr = args.addr
+    RequestHandler.database = database
 
+    # Create the server
     server = ThreadingHTTPServer((args.host, args.port), RequestHandler)
-    print(f"Serving on http://{args.host}:{args.port}  (bus={args.bus} addr={hex(addr_hex)})")
-    if args.db:
-        print(f"/api/last reads from: {args.db}")
+    print(f"BME280 is on bus {args.bus} at address {hex(addr)}")
+    print(f"Serving on http://{args.host}:{args.port}")
+    print("Ctrl-C to stop")
+
+    # Enter the request handling loop
     try:
         while not STOP:
             server.handle_request()
@@ -49,6 +55,7 @@ def main():
         except Exception:
             pass
         print("Server stopped.")
+
 
 if __name__ == "__main__":
     main()
