@@ -50,6 +50,7 @@ def main():
 
     print()
     print(f"BME280 is on bus {args.bus} at address {hex(addr)}")
+    print(f"Database is at {args.db}")
     print(f"Serving on http://{args.host}:{args.port}")
     print("Ctrl-C to stop")
     print()

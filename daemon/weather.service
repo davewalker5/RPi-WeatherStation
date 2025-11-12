@@ -1,0 +1,31 @@
+[Unit]
+Description=Weather logger + HTTP API (BME280)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/weather
+EnvironmentFile=/opt/weather/weather.env
+ExecStart=/usr/bin/python3 -m main.bme-http \
+  --db ${DB_PATH} --bus ${BUS} --addr ${ADDR} \
+  --interval ${INTERVAL} --host ${HOST} --port ${PORT}
+
+Restart=on-failure
+RestartSec=3
+
+# Hardening
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/opt/weather /var/lib/weather
+RuntimeDirectory=weather
+StateDirectory=weather
+
+# Help with Pi stability
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
