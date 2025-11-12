@@ -57,16 +57,16 @@ class RequestHandler(BaseHTTPRequestHandler):
         """
         try:
             # Retrieve the row and check it's valid - if not, return a not found error
-            row = self.database.query_last_row(self.db_path)
+            row = self.database.query_last_row()
             if not row:
                 return self._json(404, {"error": "no rows"})
 
             # Return the row of data as JSON
             return self._json(200, {
-                "time_utc": row["ts_utc"],
-                "temperature_c": round(row["temperature_c"], 2),
-                "pressure_hpa": round(row["pressure_hpa"], 2),
-                "humidity_pct": round(row["humidity_pct"], 2),
+                "time_utc": row["Timestamp"],
+                "temperature_c": round(row["Temperature"], 2),
+                "pressure_hpa": round(row["Pressure"], 2),
+                "humidity_pct": round(row["Humidity"], 2),
             })
         except Exception as ex:
             return self._json(500, {"error": str(ex)})
@@ -75,20 +75,14 @@ class RequestHandler(BaseHTTPRequestHandler):
         """
         Handle a GET request
         """
-        if self.path.casefold == "/health":
+        if self.path.casefold() == "/health":
             return self._health()
-            
+
         if self.path.casefold() == "/api/now":
             return self._reading_now()
 
         if self.path.startswith("/api/last"):
             return self._last_reading()
 
-        # Any other route generates a 404 error
+        # Any other route generates a 404 error 
         return self._json(404, {"error": "not found"})
-
-    def log_message(self, *args):
-        """
-        Overridden to quieten the normally noisy log
-        """
-        pass

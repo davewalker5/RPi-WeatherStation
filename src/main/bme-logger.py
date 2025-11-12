@@ -51,9 +51,11 @@ def main():
         sample_sensors(sensor, database)
         return
 
+    print()
     print(f"BME280 is on bus {args.bus} at address {hex(addr)}")
     print(f"Logging to {args.db} every {args.interval}s")
     print("Ctrl-C to stop")
+    print()
 
     # Set up for readings at specified intervals
     next_t = time.monotonic()
