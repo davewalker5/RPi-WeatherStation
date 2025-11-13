@@ -23,11 +23,11 @@ class RequestHandler(BaseHTTPRequestHandler):
         timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
         return self._json(200, {"status": "ok", "time": timestamp})
 
-    def _latest_reading(self):
+    def _latest_bme_reading(self):
         """
         Handle a request for the latest reading captured by the sampler
         """
-        reading = self.sampler.get_latest()
+        reading = self.sampler.get_latest_bme()
         return self._json(200, reading)
 
     def do_GET(self):
@@ -37,8 +37,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         if self.path.casefold() == "/api/health":
             return self._health()
 
-        if self.path.casefold() == "/api/latest":
-            return self._latest_reading()
+        if self.path.casefold() == "/api/bme":
+            return self._latest_bme_reading()
 
         # Any other route generates a 404 error 
         return self._json(404, {"error": "not found"})

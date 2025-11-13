@@ -5,4 +5,4 @@ PROJECT_FOLDER=$( cd "$( dirname "$0" )/.." && pwd )
 
 python3 "$PROJECT_FOLDER/src/main/read-bme.py" \
     --bus $BUS_NUMBER \
-    --addr $ADDR
+    --bme-addr $BME_ADDR

@@ -4,7 +4,8 @@ import datetime as dt
 
 PURGE_INTERVAL_MINUTES = 60
 
-CREATE_SQL = """
+CREATE_SQL = [
+"""
 CREATE TABLE IF NOT EXISTS BME280_READINGS (
     Id              INTEGER PRIMARY KEY AUTOINCREMENT,
     Timestamp       TEXT NOT NULL,
@@ -16,37 +17,36 @@ CREATE TABLE IF NOT EXISTS BME280_READINGS (
 );
 CREATE INDEX IF NOT EXISTS IX_BME280_READINGS_TS ON BME280_READINGS (Timestamp);
 """
+]
 
-PURGE_SQL = """
+PURGE_SQL = [
+"""
 DELETE FROM BME280_READINGS WHERE Timestamp <= ?;
 """
+]
 
-INSERT_SQL = """
+INSERT_BME_SQL = """
 INSERT INTO BME280_READINGS (Timestamp, Temperature, Pressure, Humidity, Bus, Address)
 VALUES (?, ?, ?, ?, ?, ?);
-"""
-
-QUERY_LAST_SQL = """
-SELECT Timestamp, Temperature, Pressure, Humidity
-FROM BME280_READINGS ORDER BY Id DESC LIMIT 1;
 """
 
 class Database:
     db_path: str | None = None
     retention: int | None = None
     bus: int | None = None
-    addr: str | None = None
+    bme_addr: str | None = None
 
-    def __init__(self, db_path, retention, bus, address):
+    def __init__(self, db_path, retention, bus, bme_address):
         self.db_path = db_path
         self.retention = retention
         self.bus = bus
-        self.address = address
+        self.bme_address = bme_address
         self.last_purged = None
 
     def create_database(self):
         con = sqlite3.connect(self.db_path)
-        con.executescript(CREATE_SQL)
+        for sql in CREATE_SQL:
+            con.executescript(sql)
         con.commit()
         con.close()
 
@@ -64,22 +64,16 @@ class Database:
             cutoff = timestamp.replace(microsecond=0).isoformat() + "Z"
             con = sqlite3.connect(self.db_path)
             cur = con.cursor()
-            cur.execute(PURGE_SQL, (cutoff,))
+            for sql in PURGE_SQL:
+                cur.execute(sql, (cutoff,))
             con.commit()
             con.close()
 
-    def insert_row(self, temperature, pressure, humidity):
+    def insert_bme_row(self, temperature, pressure, humidity):
         timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
-        cur.execute(INSERT_SQL, (timestamp, temperature, pressure, humidity, self.bus, self.address))
+        cur.execute(INSERT_BME_SQL, (timestamp, temperature, pressure, humidity, self.bus, self.bme_address))
         con.commit()
         con.close()
         return timestamp
-
-    def query_last_row(self):
-        con = sqlite3.connect(self.db_path)
-        con.row_factory = sqlite3.Row
-        row = con.execute(QUERY_LAST_SQL).fetchone()
-        con.close()
-        return row

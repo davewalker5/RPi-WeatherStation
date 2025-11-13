@@ -21,7 +21,7 @@ def sample_sensors(sensor, database):
     Sample the BME280 sensors, write the results to the database and echo them on the terminal
     """
     temperature, pressure, humidity = sensor.read()
-    timestamp = database.insert_row(temperature, pressure, humidity)
+    timestamp = database.insert_bme_row(temperature, pressure, humidity)
     print(f"{timestamp}  T={temperature:.2f}°C  P={pressure:.2f} hPa  H={humidity:.2f}%")
 
 
@@ -31,7 +31,7 @@ def main():
     ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
     ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
     ap.add_argument("--bus", type=int, default=0, help="I2C bus number (0 or 1 on Pi 1B)")
-    ap.add_argument("--addr", default="0x76", help="I2C address (0x76 or 0x77)")
+    ap.add_argument("--bme-addr", default="0x76", help="I2C address (0x76 or 0x77)")
     ap.add_argument("--once", action="store_true", help="Take one reading and exit")
     args = ap.parse_args()
 
@@ -49,11 +49,11 @@ def main():
     signal.signal(signal.SIGTERM, _sig_handler)
 
     # Create the wrapper to query the BME280
-    addr = int(args.addr, 16)
+    addr = int(args.bme_addr, 16)
     sensor = BME280(bus=args.bus, address=addr)
 
     # Create the database access wrapper
-    database = Database(args.db, args.retention, args.bus, args.addr)
+    database = Database(args.db, args.retention, args.bus, args.bme_addr)
     database.create_database()
 
     # If one-shot has been specified, sample the sensor, display the results and exit
