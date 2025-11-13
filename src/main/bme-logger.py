@@ -2,6 +2,7 @@ import argparse
 import signal
 import time
 import sys
+import os
 import datetime as dt
 from weather import BME280, Database
 
@@ -20,30 +21,39 @@ def sample_sensors(sensor, database):
     Sample the BME280 sensors, write the results to the database and echo them on the terminal
     """
     temperature, pressure, humidity = sensor.read()
-    timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-    database.insert_row(timestamp, temperature, pressure, humidity)
+    timestamp = database.insert_bme_row(temperature, pressure, humidity)
     print(f"{timestamp}  T={temperature:.2f}°C  P={pressure:.2f} hPa  H={humidity:.2f}%")
 
 
 def main():
     ap = argparse.ArgumentParser(description="BME280 → SQLite logger")
     ap.add_argument("--db", default="bme280.db", help="SQLite database path")
+    ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
     ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
     ap.add_argument("--bus", type=int, default=0, help="I2C bus number (0 or 1 on Pi 1B)")
-    ap.add_argument("--addr", default="0x76", help="I2C address (0x76 or 0x77)")
+    ap.add_argument("--bme-addr", default="0x76", help="I2C address (0x76 or 0x77)")
     ap.add_argument("--once", action="store_true", help="Take one reading and exit")
     args = ap.parse_args()
+
+    # Show the argument values
+    print()
+    print(os.path.basename(__file__).upper())
+    print()
+    args_dict = vars(args)
+    for name, value in args_dict.items():
+        print(f"{name} : {value}")
+    print()
 
     # Install signal handlers for graceful stop
     signal.signal(signal.SIGINT, _sig_handler)
     signal.signal(signal.SIGTERM, _sig_handler)
 
     # Create the wrapper to query the BME280
-    addr = int(args.addr, 16)
+    addr = int(args.bme_addr, 16)
     sensor = BME280(bus=args.bus, address=addr)
 
     # Create the database access wrapper
-    database = Database(args.bus, args.addr, args.db)
+    database = Database(args.db, args.retention, args.bus, args.bme_addr)
     database.create_database()
 
     # If one-shot has been specified, sample the sensor, display the results and exit
@@ -51,20 +61,17 @@ def main():
         sample_sensors(sensor, database)
         return
 
-    print()
-    print(f"BME280 is on bus {args.bus} at address {hex(addr)}")
-    print(f"Logging to {args.db} every {args.interval}s")
-    print("Ctrl-C to stop")
-    print()
-
     # Set up for readings at specified intervals
     next_t = time.monotonic()
     while not STOP:
-        # Take the next readings
         try:
+            # Purge old data
+            database.purge()
+
+            # Take the next readings
             sample_sensors(sensor, database)
         except OSError as ex:
-            ts = dt.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+            ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
             print(f"{ts}  I2C error: {ex}; retrying in {args.interval}s", file=sys.stderr)
 
         # Wait for the specified interval

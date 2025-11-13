@@ -2,7 +2,6 @@
 import logging
 import threading
 import time
-import datetime as dt
 from .bme280 import BME280
 from .database import Database
 
@@ -18,18 +17,30 @@ class Sampler(threading.Thread):
         self.database = database
         self.interval = float(interval)
         self.stop = threading.Event()
-        self.latest = None
+        self.latest_bme = None
         self._lock = threading.Lock()
+        self.last_purged = None
 
-    def _sample_sensors(self):
+    def _sample_bme_sensors(self):
         """
         Sample the BME280 sensors, write the results to the database and log them
         """
         temperature, pressure, humidity = self.sensor.read()
-        timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-        self.database.insert_row(timestamp, temperature, pressure, humidity)
+        timestamp = self.database.insert_bme_row(temperature, pressure, humidity)
         logging.info(f"{timestamp}  T={temperature:.2f}°C  P={pressure:.2f} hPa  H={humidity:.2f}%")
         return timestamp, temperature, pressure, humidity
+
+    def _set_latest_bme(self, timestamp, temperature, pressure, humidity):
+        """
+        Store the latest BME280 readings
+        """
+        with self._lock:
+            self.latest_bme = {
+                "time_utc": timestamp,
+                "temperature_c": round(temperature, 2),
+                "pressure_hpa": round(pressure, 2),
+                "humidity_pct": round(humidity, 2),
+            }
 
     def run(self):
         """
@@ -40,15 +51,12 @@ class Sampler(threading.Thread):
         logging.info(f"Sampler started: interval={self.interval:.3f} s")
         while not self.stop.is_set():
             try:
-                # Take the next reading and cache it as the latest reading
-                timestamp, temperature, pressure, humidity = self._sample_sensors()
-                with self._lock:
-                    self.latest = {
-                        "time_utc": timestamp,
-                        "temperature_c": round(temperature, 2),
-                        "pressure_hpa": round(pressure, 2),
-                        "humidity_pct": round(humidity, 2),
-                    }
+                # Purge old data
+                self.database.purge()
+
+                # Take the next set of BME280 readings and cache them as the latest reading
+                timestamp, temperature, pressure, humidity = self._sample_bme_sensors()
+                self._set_latest_bme(timestamp, temperature, pressure, humidity)
             except Exception as ex:
                 logging.warning("Sampler error: %s", ex)
 
@@ -58,9 +66,9 @@ class Sampler(threading.Thread):
 
         logging.info("Sampler stopped.")
 
-    def get_latest(self):
+    def get_latest_bme(self):
         """
         Return the most recent reading captured by the sampler
         """
         with self._lock:
-            return dict(self.latest) if self.latest else None
+            return dict(self.latest_bme) if self.latest_bme else None

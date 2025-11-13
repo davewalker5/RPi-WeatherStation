@@ -1,5 +1,5 @@
 [Unit]
-Description=Weather logger + HTTP API (BME280)
+Description=Raspberry Pi Weather Service
 Wants=network-online.target
 After=network-online.target
 
@@ -7,25 +7,21 @@ After=network-online.target
 Type=simple
 WorkingDirectory=/opt/weather
 EnvironmentFile=/opt/weather/weather.env
-ExecStart=/usr/bin/python3 -m main.bme-http \
-  --db ${DB_PATH} --bus ${BUS} --addr ${ADDR} \
+ExecStart=/usr/bin/python3 -m main.weather-service \
+  --db ${DB_PATH} --retention ${RETENTION} --bus ${BUS} --bme-addr ${ADDR} \
   --interval ${INTERVAL} --host ${HOST} --port ${PORT}
 
 Restart=on-failure
 RestartSec=3
 
 # Hardening
+NoNewPrivileges=true
+PrivateTmp=true
 ProtectSystem=full
 ProtectHome=read-only
 ReadWritePaths=/opt/weather /var/lib/weather
 RuntimeDirectory=weather
 StateDirectory=weather
-
-# Help with Pi stability
-NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=full
-ProtectHome=true
 
 [Install]
 WantedBy=multi-user.target
