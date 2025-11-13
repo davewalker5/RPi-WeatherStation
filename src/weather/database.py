@@ -1,5 +1,6 @@
 import sqlite3
-from datetime import datetime, timedelta, timezone
+import datetime as dt
+# from datetime import datetime, timedelta, timezone
 
 PURGE_INTERVAL_MINUTES = 60
 
@@ -52,25 +53,29 @@ class Database:
     def purge(self):
         # Get the current timestamp and find out how long it is since old data was last purged. Only
         # purge old data periodically
-        now = datetime.now(timezone.utc)
-        if (self.last_purged is None) or (((now - self.last_purged).total_seconds() / 60.0) >= PURGE_INTERVAL_MINUTES):
+        now = dt.datetime.now(dt.timezone.utc)
+        elapsed = PURGE_INTERVAL_MINUTES if self.last_purged is None else (now - self.last_purged).total_seconds() / 60.0
+        if elapsed >= PURGE_INTERVAL_MINUTES:
             # Set the "last purged" timestamp
             self.last_purged = now
 
             # Connect to the database and purge old data
-            timestamp = now - timedelta(days=self.retention)
+            timestamp = now - dt.timedelta(minutes=self.retention)
+            cutoff = timestamp.replace(microsecond=0).isoformat() + "Z"
             con = sqlite3.connect(self.db_path)
             cur = con.cursor()
-            cur.execute(PURGE_SQL, (timestamp,))
+            cur.execute(PURGE_SQL, (cutoff,))
             con.commit()
             con.close()
 
-    def insert_row(self, timestamp, temperature, pressure, humidity):
+    def insert_row(self, temperature, pressure, humidity):
+        timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
         cur.execute(INSERT_SQL, (timestamp, temperature, pressure, humidity, self.bus, self.address))
         con.commit()
         con.close()
+        return timestamp
 
     def query_last_row(self):
         con = sqlite3.connect(self.db_path)

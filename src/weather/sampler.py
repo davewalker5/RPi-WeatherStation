@@ -2,7 +2,6 @@
 import logging
 import threading
 import time
-import datetime as dt
 from .bme280 import BME280
 from .database import Database
 
@@ -27,8 +26,7 @@ class Sampler(threading.Thread):
         Sample the BME280 sensors, write the results to the database and log them
         """
         temperature, pressure, humidity = self.sensor.read()
-        timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-        self.database.insert_row(timestamp, temperature, pressure, humidity)
+        timestamp = self.database.insert_row(temperature, pressure, humidity)
         logging.info(f"{timestamp}  T={temperature:.2f}°C  P={pressure:.2f} hPa  H={humidity:.2f}%")
         return timestamp, temperature, pressure, humidity
 

@@ -1,6 +1,7 @@
 import argparse
 import signal
 import threading
+import os
 from http.server import ThreadingHTTPServer
 from weather import BME280, Database, RequestHandler, Sampler
 
@@ -25,6 +26,15 @@ def main():
     ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
     args = ap.parse_args()
 
+    # Show the argument values
+    print()
+    print(os.path.basename(__file__).upper())
+    print()
+    args_dict = vars(args)
+    for name, value in args_dict.items():
+        print(f"{name} : {value}")
+    print()
+
     # Install signal handlers for graceful stop
     signal.signal(signal.SIGINT, _sig_handler)
     signal.signal(signal.SIGTERM, _sig_handler)
@@ -48,13 +58,6 @@ def main():
     server = ThreadingHTTPServer((args.host, args.port), RequestHandler)
     global stop
     stop = threading.Event()
-
-    print()
-    print(f"BME280 is on bus {args.bus} at address {hex(addr)}")
-    print(f"Database is at {args.db}")
-    print(f"Serving on http://{args.host}:{args.port}")
-    print("Ctrl-C to stop")
-    print()
 
     # Enter the request handling loop
     try:
