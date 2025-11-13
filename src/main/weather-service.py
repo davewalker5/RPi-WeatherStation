@@ -21,7 +21,7 @@ def main():
     ap.add_argument("--host", default="127.0.0.1", help="bind address (use 0.0.0.0 to expose on LAN)")
     ap.add_argument("--bus", type=int, default=1, help="I2C bus number")
     ap.add_argument("--bme-addr", default="0x76", help="BME280 I2C address")
-    ap.add_argument("--veml-addr", default="10", help="VEML7700 I2C address")
+    ap.add_argument("--veml-addr", default="0x10", help="VEML7700 I2C address")
     ap.add_argument("--gain", default=0.25, help="Gain (light sensor sensitivity)")
     ap.add_argument("--integration-ms", default=100, help="Integration time (light collection time to produce a reading), ms")
     ap.add_argument("--db", default=None, help="optional SQLite path to enable /api/last")

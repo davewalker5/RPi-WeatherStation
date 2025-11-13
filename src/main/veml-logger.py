@@ -22,7 +22,7 @@ def sample_sensors(sensor, database):
     """
     als, white, lux = sensor.read()
     timestamp = database.insert_veml_row(als, white, lux)
-    print(f"{timestamp}  ALS={als}°C  White={white}  Lux={lux:.2f}")
+    print(f"{timestamp}  ALS={als}°C  White={white}  Illuminance={lux:.2f} lux")
 
 
 def main():
