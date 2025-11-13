@@ -1,27 +1,43 @@
 import sqlite3
 import datetime as dt
-# from datetime import datetime, timedelta, timezone
 
 PURGE_INTERVAL_MINUTES = 60
 
 CREATE_SQL = [
 """
 CREATE TABLE IF NOT EXISTS BME280_READINGS (
-    Id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    Timestamp       TEXT NOT NULL,
-    Temperature     REAL NOT NULL,
-    Pressure        REAL NOT NULL,
-    Humidity        REAL NOT NULL,
-    Bus             INTEGER NOT NULL,
-    Address         TEXT NOT NULL
+    Id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    Timestamp           TEXT NOT NULL,
+    Temperature         REAL NOT NULL,
+    Pressure            REAL NOT NULL,
+    Humidity            REAL NOT NULL,
+    Bus                 INTEGER NOT NULL,
+    Address             TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS IX_BME280_READINGS_TS ON BME280_READINGS (Timestamp);
+""",
+"""
+CREATE TABLE IF NOT EXISTS VEML7700_READINGS (
+    Id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    Timestamp           TEXT NOT NULL,
+    ALS                 INTEGER NOT NULL,
+    White               INTEGER NOT NULL,
+    Illuminance         REAL NOT NULL,
+    Gain                REAL NOT NULL,
+    IntegrationTime     INTEGER NOT NULL,
+    Bus                 INTEGER NOT NULL,
+    Address             TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS IX_VEML7700_READINGS_TS ON VEML7700_READINGS (Timestamp);
 """
 ]
 
 PURGE_SQL = [
 """
 DELETE FROM BME280_READINGS WHERE Timestamp <= ?;
+""",
+"""
+DELETE FROM VEML7700_READINGS WHERE Timestamp <= ?;
 """
 ]
 
@@ -30,17 +46,29 @@ INSERT INTO BME280_READINGS (Timestamp, Temperature, Pressure, Humidity, Bus, Ad
 VALUES (?, ?, ?, ?, ?, ?);
 """
 
+INSERT_VEML_SQL = """
+INSERT INTO VEML7700_READINGS (Timestamp, ALS, White, Illuminance, Gain, IntegrationTime, Bus, Address)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+"""
+
+
 class Database:
     db_path: str | None = None
     retention: int | None = None
     bus: int | None = None
     bme_addr: str | None = None
+    veml_addr: str | None = None
+    veml_gain: float | None = None
+    veml_integration_time_ms: int | None = None
 
-    def __init__(self, db_path, retention, bus, bme_address):
+    def __init__(self, db_path, retention, bus, bme_address, veml_address, veml_gain, veml_integration_time_ms):
         self.db_path = db_path
         self.retention = retention
         self.bus = bus
         self.bme_address = bme_address
+        self.veml_address = veml_address
+        self.veml_gain = veml_gain
+        self.veml_integration_time_ms = veml_integration_time_ms
         self.last_purged = None
 
     def create_database(self):
@@ -74,6 +102,15 @@ class Database:
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
         cur.execute(INSERT_BME_SQL, (timestamp, temperature, pressure, humidity, self.bus, self.bme_address))
+        con.commit()
+        con.close()
+        return timestamp
+
+    def insert_veml_row(self, als, white, lux):
+        timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
+        con = sqlite3.connect(self.db_path)
+        cur = con.cursor()
+        cur.execute(INSERT_VEML_SQL, (timestamp, als, white, lux, self.veml_gain, self.veml_integration_time_ms, self.bus, self.veml_address))
         con.commit()
         con.close()
         return timestamp

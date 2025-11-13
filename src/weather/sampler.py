@@ -3,21 +3,25 @@ import logging
 import threading
 import time
 from .bme280 import BME280
+from .veml7700 import VEML7700
 from .database import Database
 
 
 class Sampler(threading.Thread):
-    sensor: BME280 = None
+    bme280: BME280 = None
+    veml7700: VEML7700 = None
     database: Database = None
     interval: float = None
 
-    def __init__(self, sensor, database, interval):
+    def __init__(self, bme280, veml7700, database, interval):
         super().__init__(daemon=True)
-        self.sensor = sensor
+        self.bme280 = bme280
+        self.veml7700 = veml7700
         self.database = database
         self.interval = float(interval)
         self.stop = threading.Event()
         self.latest_bme = None
+        self.latest_veml = None
         self._lock = threading.Lock()
         self.last_purged = None
 
@@ -25,7 +29,7 @@ class Sampler(threading.Thread):
         """
         Sample the BME280 sensors, write the results to the database and log them
         """
-        temperature, pressure, humidity = self.sensor.read()
+        temperature, pressure, humidity = self.bme280.read()
         timestamp = self.database.insert_bme_row(temperature, pressure, humidity)
         logging.info(f"{timestamp}  T={temperature:.2f}°C  P={pressure:.2f} hPa  H={humidity:.2f}%")
         return timestamp, temperature, pressure, humidity
@@ -42,6 +46,27 @@ class Sampler(threading.Thread):
                 "humidity_pct": round(humidity, 2),
             }
 
+    def _sample_veml_sensors(self):
+        """
+        Sample the VEML7700 sensors, write the results to the database and log them
+        """
+        als, white, lux = self.veml7700.read()
+        timestamp = self.database.insert_veml_row(als, white, lux)
+        logging.info(f"{timestamp}  ALS={als}  White={white}  Illuminance={lux:.2f} lux")
+        return timestamp, als, white, lux
+
+    def _set_latest_veml(self, timestamp, als, white, lux):
+        """
+        Store the latest VEML7700 readings
+        """
+        with self._lock:
+            self.latest_bme = {
+                "time_utc": timestamp,
+                "als": als,
+                "white": white,
+                "illuminance_lux": round(lux, 2),
+            }
+
     def run(self):
         """
         Run the sampler event loop
@@ -54,9 +79,13 @@ class Sampler(threading.Thread):
                 # Purge old data
                 self.database.purge()
 
-                # Take the next set of BME280 readings and cache them as the latest reading
+                # Take the next set of BME280 readings and cache them as the latest readings
                 timestamp, temperature, pressure, humidity = self._sample_bme_sensors()
                 self._set_latest_bme(timestamp, temperature, pressure, humidity)
+
+                # Take the next set of VEML7700 readings and cache them as the latest readings
+                timestamp, als, white, lux = self._sample_veml_sensors()
+                self._set_latest_veml(timestamp, als, white, lux)
             except Exception as ex:
                 logging.warning("Sampler error: %s", ex)
 
@@ -68,7 +97,14 @@ class Sampler(threading.Thread):
 
     def get_latest_bme(self):
         """
-        Return the most recent reading captured by the sampler
+        Return the most recent BME280 readings captured by the sampler
         """
         with self._lock:
             return dict(self.latest_bme) if self.latest_bme else None
+
+    def get_latest_veml(self):
+        """
+        Return the most recent VEML7700 readings captured by the sampler
+        """
+        with self._lock:
+            return dict(self.latest_veml) if self.latest_veml else None

@@ -4,7 +4,7 @@ import time
 import sys
 import os
 import datetime as dt
-from weather import BME280, Database
+from weather import VEML7700, Database
 
 STOP = False
 
@@ -18,11 +18,11 @@ def _sig_handler(signum, frame):
 
 def sample_sensors(sensor, database):
     """
-    Sample the BME280 sensors, write the results to the database and echo them on the terminal
+    Sample the VEML770 sensors, write the results to the database and echo them on the terminal
     """
-    temperature, pressure, humidity = sensor.read()
-    timestamp = database.insert_bme_row(temperature, pressure, humidity)
-    print(f"{timestamp}  T={temperature:.2f}°C  P={pressure:.2f} hPa  H={humidity:.2f}%")
+    als, white, lux = sensor.read()
+    timestamp = database.insert_veml_row(als, white, lux)
+    print(f"{timestamp}  ALS={als}°C  White={white}  Lux={lux:.2f}")
 
 
 def main():
@@ -30,8 +30,10 @@ def main():
     ap.add_argument("--db", default="bme280.db", help="SQLite database path")
     ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
     ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
-    ap.add_argument("--bus", type=int, default=1, help="I2C bus number")
-    ap.add_argument("--bme-addr", default="0x76", help="BME280 I2C address")
+    ap.add_argument("--bus", type=int, default=0, help="I2C bus number")
+    ap.add_argument("--veml-addr", default="10", help="VEML7700 I2C address")
+    ap.add_argument("--gain", default=0.25, help="Gain (light sensor sensitivity)")
+    ap.add_argument("--integration-ms", default=100, help="Integration time (light collection time to produce a reading), ms")
     ap.add_argument("--once", action="store_true", help="Take one reading and exit")
     args = ap.parse_args()
 
@@ -49,11 +51,11 @@ def main():
     signal.signal(signal.SIGTERM, _sig_handler)
 
     # Create the wrapper to query the BME280
-    addr = int(args.bme_addr, 16)
-    sensor = BME280(bus=args.bus, address=addr)
+    addr = int(args.veml_addr, 16)
+    sensor = VEML7700(bus=args.bus, address=addr, gain=args.gain, integration_time_ms=args.integration_ms)
 
     # Create the database access wrapper
-    database = Database(args.db, args.retention, args.bus, args.bme_addr)
+    database = Database(args.db, args.retention, args.bus, args.bme_addr, args.veml_addr, args.gain, args.integration_ms)
     database.create_database()
 
     # If one-shot has been specified, sample the sensor, display the results and exit
