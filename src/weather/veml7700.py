@@ -114,6 +114,10 @@ class VEML7700:
         """Return raw WHITE 16-bit count value."""
         return self.dev.read_u16(self.REG_WHITE)
 
+    def is_saturated(self, als_raw):
+        """Return true if the ALS is saturated"""
+        return als_raw >= 65500
+
     def read_lux(self) -> float:
         """
         Return approximate lux based on current configuration.

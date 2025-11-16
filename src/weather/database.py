@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS VEML7700_READINGS (
     Gain                REAL NOT NULL,
     IntegrationTime     INTEGER NOT NULL,
     Bus                 INTEGER NOT NULL,
-    Address             TEXT NOT NULL
+    Address             TEXT NOT NULL,
+    IsSaturated         INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS IX_VEML7700_READINGS_TS ON VEML7700_READINGS (Timestamp);
 """
@@ -47,8 +48,8 @@ VALUES (?, ?, ?, ?, ?, ?);
 """
 
 INSERT_VEML_SQL = """
-INSERT INTO VEML7700_READINGS (Timestamp, ALS, White, Illuminance, Gain, IntegrationTime, Bus, Address)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO VEML7700_READINGS (Timestamp, ALS, White, Illuminance, IsSaturated, Gain, IntegrationTime, Bus, Address)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 """
 
 
@@ -106,11 +107,11 @@ class Database:
         con.close()
         return timestamp
 
-    def insert_veml_row(self, als, white, lux):
+    def insert_veml_row(self, als, white, lux, is_saturated):
         timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
-        cur.execute(INSERT_VEML_SQL, (timestamp, als, white, lux, self.veml_gain, self.veml_integration_time_ms, self.bus, self.veml_address))
+        cur.execute(INSERT_VEML_SQL, (timestamp, als, white, lux, is_saturated, self.veml_gain, self.veml_integration_time_ms, self.bus, self.veml_address))
         con.commit()
         con.close()
         return timestamp

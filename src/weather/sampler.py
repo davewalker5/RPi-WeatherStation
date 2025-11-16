@@ -51,11 +51,12 @@ class Sampler(threading.Thread):
         Sample the VEML7700 sensors, write the results to the database and log them
         """
         als, white, lux = self.veml7700.read()
-        timestamp = self.database.insert_veml_row(als, white, lux)
-        logging.info(f"{timestamp}  Gain={self.veml7700.gain}  Integration Time={self.veml7700.integration_time_ms} ms  ALS={als}  White={white}  Illuminance={lux:.2f} lux")
-        return timestamp, als, white, lux
+        is_saturated = self.veml7700.is_saturated(als)
+        timestamp = self.database.insert_veml_row(als, white, lux, is_saturated)
+        logging.info(f"{timestamp}  Gain={self.veml7700.gain}  Integration Time={self.veml7700.integration_time_ms} ms  ALS={als}  White={white}  Illuminance={lux:.2f} lux  IsSaturated={is_saturated}")
+        return timestamp, als, white, lux, is_saturated
 
-    def _set_latest_veml(self, timestamp, als, white, lux):
+    def _set_latest_veml(self, timestamp, als, white, lux, is_saturated):
         """
         Store the latest VEML7700 readings
         """
@@ -67,6 +68,7 @@ class Sampler(threading.Thread):
                 "als": als,
                 "white": white,
                 "illuminance_lux": round(lux, 2),
+                "saturated": is_saturated
             }
 
     def run(self):
@@ -86,8 +88,8 @@ class Sampler(threading.Thread):
                 self._set_latest_bme(timestamp, temperature, pressure, humidity)
 
                 # Take the next set of VEML7700 readings and cache them as the latest readings
-                timestamp, als, white, lux = self._sample_veml_sensors()
-                self._set_latest_veml(timestamp, als, white, lux)
+                timestamp, als, white, lux, is_saturated = self._sample_veml_sensors()
+                self._set_latest_veml(timestamp, als, white, lux, is_saturated)
             except Exception as ex:
                 logging.warning("Sampler error: %s", ex)
 
