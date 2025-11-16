@@ -23,7 +23,7 @@ def sample_sensors(sensor, database):
     als, white, lux = sensor.read()
     is_saturated = sensor.is_saturated(als)
     timestamp = database.insert_veml_row(als, white, lux, is_saturated)
-    print(f"{timestamp}  Gain={sensor.gain}  Integration Time={sensor.integration_time_ms} ms  ALS={als}  White={white}  Illuminance={lux:.2f} lux")
+    print(f"{timestamp}  Gain={sensor.gain}  Integration Time={sensor.integration_time_ms} ms  ALS={als}  White={white}  Illuminance={lux:.2f} lux  IsSaturated={is_saturated}")
 
 
 def main():

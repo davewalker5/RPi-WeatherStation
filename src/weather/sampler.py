@@ -53,7 +53,7 @@ class Sampler(threading.Thread):
         als, white, lux = self.veml7700.read()
         is_saturated = self.veml7700.is_saturated(als)
         timestamp = self.database.insert_veml_row(als, white, lux, is_saturated)
-        logging.info(f"{timestamp}  Gain={self.veml7700.gain}  Integration Time={self.veml7700.integration_time_ms} ms  ALS={als}  White={white}  Illuminance={lux:.2f} lux")
+        logging.info(f"{timestamp}  Gain={self.veml7700.gain}  Integration Time={self.veml7700.integration_time_ms} ms  ALS={als}  White={white}  Illuminance={lux:.2f} lux  IsSaturated={is_saturated}")
         return timestamp, als, white, lux, is_saturated
 
     def _set_latest_veml(self, timestamp, als, white, lux, is_saturated):
