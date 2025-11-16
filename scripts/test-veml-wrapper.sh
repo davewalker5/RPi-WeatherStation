@@ -3,4 +3,4 @@
 PROJECT_FOLDER=$( cd "$( dirname "$0" )/.." && pwd )
 . "$PROJECT_FOLDER/scripts/config.sh"
 
-python3 "$PROJECT_FOLDER/src/verification/test-bme-chip.py"
+python3 "$PROJECT_FOLDER/src/verification/test-veml-wrapper.py"

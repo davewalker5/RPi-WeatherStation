@@ -22,8 +22,8 @@ def main():
     ap.add_argument("--bus", type=int, default=1, help="I2C bus number")
     ap.add_argument("--bme-addr", default="0x76", help="BME280 I2C address")
     ap.add_argument("--veml-addr", default="0x10", help="VEML7700 I2C address")
-    ap.add_argument("--gain", default=0.25, help="Gain (light sensor sensitivity)")
-    ap.add_argument("--integration-ms", default=100, help="Integration time (light collection time to produce a reading), ms")
+    ap.add_argument("--veml-gain", type=float, default=0.25, help="Gain (light sensor sensitivity)")
+    ap.add_argument("--veml-integration-ms", type=int, default=100, help="Integration time (light collection time to produce a reading), ms")
     ap.add_argument("--db", default=None, help="optional SQLite path to enable /api/last")
     ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
     ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
@@ -48,10 +48,10 @@ def main():
 
     # Create the wrapper to query the VEML770
     addr = int(args.veml_addr, 16)
-    veml7700 = VEML7700(bus=args.bus, address=addr, gain=args.gain, integration_time_ms=args.integration_ms)
+    veml7700 = VEML7700(bus=args.bus, address=addr, gain=args.veml_gain, integration_time_ms=args.veml_integration_ms)
 
     # Create the database access wrapper
-    database = Database(args.db, args.retention, args.bus, args.bme_addr, args.veml_addr, args.gain, args.integration_ms)
+    database = Database(args.db, args.retention, args.bus, args.bme_addr, args.veml_addr, args.veml_gain, args.veml_integration_ms)
     database.create_database()
 
     # Create and start the sampler

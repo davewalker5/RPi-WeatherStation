@@ -27,7 +27,7 @@ def sample_sensors(sensor, database):
 
 def main():
     ap = argparse.ArgumentParser(description="BME280 → SQLite logger")
-    ap.add_argument("--db", default="bme280.db", help="SQLite database path")
+    ap.add_argument("--db", default="weather.db", help="SQLite database path")
     ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
     ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
     ap.add_argument("--bus", type=int, default=1, help="I2C bus number")
@@ -53,7 +53,7 @@ def main():
     sensor = BME280(bus=args.bus, address=addr)
 
     # Create the database access wrapper
-    database = Database(args.db, args.retention, args.bus, args.bme_addr)
+    database = Database(args.db, args.retention, args.bus, args.bme_addr, 0, 0, 0)
     database.create_database()
 
     # If one-shot has been specified, sample the sensor, display the results and exit

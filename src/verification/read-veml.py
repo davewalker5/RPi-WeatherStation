@@ -1,0 +1,25 @@
+import argparse
+import datetime as dt
+from weather import VEML7700
+
+
+def main():
+    ap = argparse.ArgumentParser(description="VEML770 Sensor Check")
+    ap.add_argument("--bus", type=int, default=0, help="I2C bus number")
+    ap.add_argument("--veml-addr", default="10", help="VEML7700 I2C address")
+    ap.add_argument("--veml-gain", type=float, default=0.25, help="Gain (light sensor sensitivity)")
+    ap.add_argument("--veml-integration-ms", type=int, default=100, help="Integration time (light collection time to produce a reading), ms")
+    args = ap.parse_args()
+
+    # Create the BME280 wrapper
+    addr = int(args.veml_addr, 16)
+    sensor = VEML7700(bus=args.bus, address=addr, gain=args.veml_gain, integration_time_ms=args.veml_integration_ms)
+    
+    # Read the sensors
+    als, white, lux = sensor.read()
+    timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
+    print(f"{timestamp}  Gain={sensor.gain}  Integration Time={sensor.integration_time_ms} ms  ALS={als}  White={white}  Illuminance={lux:.2f} lux")
+
+
+if __name__ == "__main__":
+    main()

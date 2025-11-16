@@ -52,7 +52,7 @@ class Sampler(threading.Thread):
         """
         als, white, lux = self.veml7700.read()
         timestamp = self.database.insert_veml_row(als, white, lux)
-        logging.info(f"{timestamp}  ALS={als}  White={white}  Illuminance={lux:.2f} lux")
+        logging.info(f"{timestamp}  Gain={self.veml770.gain}  Intgration Time={self.veml770.integration_time_ms} ms  ALS={als}  White={white}  Illuminance={lux:.2f} lux")
         return timestamp, als, white, lux
 
     def _set_latest_veml(self, timestamp, als, white, lux):

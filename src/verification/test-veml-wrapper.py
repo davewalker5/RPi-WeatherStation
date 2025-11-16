@@ -1,0 +1,30 @@
+import time
+from weather import VEML7700
+from os import environ
+
+def main():
+    sensor = VEML7700(
+        bus=int(environ["BUS_NUMBER"]),
+        address=int(environ["VEML_ADDR"], 16),
+        gain=float(environ["VEML_GAIN"]),
+        integration_time_ms=int(environ["VEML_INTEGRATION_TIME"])
+    )
+
+    # Confirm ID + config
+    try:
+        dev_id = sensor.read_id()
+        conf   = sensor.read_conf()
+        print(f"ID=0x{dev_id:04X}, CONF=0x{conf:04X}")
+    except AttributeError:
+        pass
+
+    try:
+        while True:
+            als, white, lux = sensor.read()
+            print(f"ALS={als:5d}  WHITE={white:5d}  LUX≈{lux:8.2f}")
+            time.sleep(1.0)
+    finally:
+        sensor.close()
+
+if __name__ == "__main__":
+    main()

@@ -5,6 +5,8 @@ export PYTHONPATH="$PROJECT_FOLDER/src"
 export BUS_NUMBER=0
 export BME_ADDR=0x76
 export VEML_ADDR=0x10
+export VEML_GAIN=0.25
+export VEML_INTEGRATION_TIME=100
 
 # Make sure the data folder exists so the database can be created if needed
 mkdir -p "$PROJECT_FOLDER/data"

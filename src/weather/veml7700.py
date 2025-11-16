@@ -53,13 +53,15 @@ class VEML7700:
         (0.125, 25): 1.8432,
     }
 
-    def __init__(self, bus, address, gain,integration_time_ms):
+    def __init__(self, bus, address, gain, integration_time_ms):
         self.dev = I2CWordDevice(bus, address)
-        self.gain = gain
-        self.integration_time_ms = integration_time_ms
+
+        # Normalise / coerce types
+        self.gain = float(gain)
+        self.integration_time_ms = int(integration_time_ms)
 
         # Configure sensor
-        conf = self._build_conf_word(gain, integration_time_ms)
+        conf = self._build_conf_word(self.gain, self.integration_time_ms)
         self.dev.write_u16(self.REG_ALS_CONF, conf)
 
         # Clear thresholds & power-saving for a clean start
@@ -67,14 +69,10 @@ class VEML7700:
         self.dev.write_u16(self.REG_ALS_WL, 0x0000)
         self.dev.write_u16(self.REG_PSM,    0x0000)
 
-        # Datasheet says to wait at least one integration period after changing IT or enabling the sensor
-        # https://www.vishay.com/docs/84323/designingveml7700.pdf
         time.sleep(self.integration_time_ms / 1000.0)
 
-        # Choose resolution for current settings, using a sensible default if the gain and integration time aren't
-        # in the pre-computed table
         self._resolution = self._RESOLUTION_LUX_PER_CT.get(
-            (gain, integration_time_ms),
+            (self.gain, self.integration_time_ms),
             0.2304
         )
 
@@ -98,6 +96,13 @@ class VEML7700:
         # ALS_SD bit 0 -> 0 (power on)
         return word & 0xFFFF
 
+    def read_id(self) -> int:
+        """Return device ID (should be ~0xC481)."""
+        return self.dev.read_u16(0x07)
+
+    def read_conf(self) -> int:
+        """Return ALS_CONF register value."""
+        return self.dev.read_u16(self.REG_ALS_CONF)
     def close(self):
         self.dev.close()
 
