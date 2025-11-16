@@ -10,12 +10,11 @@ class VEML7700:
       - ALS_GAIN = 1/4
       - ALS_IT   = 100 ms
 
-    This gives a useful range (~0–15 klx) with decent resolution, and a lux scaling of approximately 0.2304 lx/count
-    (https://forums.raspberrypi.com/viewtopic.php?t=198082)
+    This gives a useful range (~0–15 klx) with decent resolution, and a lux
+    scaling of approximately 0.2304 lx/count for gain=1/4, IT=100 ms.
     """
 
     # Register addresses
-    # https://www.vishay.com/docs/84323/designingveml7700.pdf
     REG_ALS_CONF = 0x00
     REG_ALS_WH   = 0x01
     REG_ALS_WL   = 0x02
@@ -25,14 +24,13 @@ class VEML7700:
     REG_ALS_INT  = 0x06
 
     # Bit field lookup tables for configuration register (#0)
-    # https://www.vishay.com/docs/84286/veml7700.pdf
     _GAIN_BITS = {
-        1:    0b00,   # ALS gain x1
-        2:    0b01,   # ALS gain x2
-        1/8:  0b10,   # ALS gain x1/8
-        0.125:0b10,
-        1/4:  0b11,   # ALS gain x1/4
-        0.25: 0b11,
+        1:      0b00,   # ALS gain x1
+        2:      0b01,   # ALS gain x2
+        1/8:    0b10,   # ALS gain x1/8
+        0.125:  0b10,
+        1/4:    0b11,   # ALS gain x1/4
+        0.25:   0b11,
     }
 
     _IT_BITS = {
@@ -44,12 +42,19 @@ class VEML7700:
         800:  0b0011,
     }
 
-    # Precomputed lux/ct for some common settings. The tuples are (gain, integration_time_ms)
-    # https://forums.raspberrypi.com/viewtopic.php?t=198082
+    # Allowed gain/IT values for auto-ranging (sorted low→high)
+    _ALLOWED_GAINS = [0.125, 0.25, 1.0, 2.0]
+    _ALLOWED_IT    = [25, 50, 100, 200, 400, 800]  # ms
+
+    # Baseline resolution used for scaling (gain=1/4, IT=100ms)
+    _BASE_GAIN = 0.25
+    _BASE_IT   = 100
+    _BASE_RES  = 0.2304  # lux per count at BASE_GAIN/BASE_IT
+
+    # Optional specific precomputed values (used if present)
     _RESOLUTION_LUX_PER_CT = {
-        (1/4, 100): 0.2304,
-        (0.25, 100): 0.2304,
-        (1/8, 25): 1.8432,
+        (_BASE_GAIN, _BASE_IT): _BASE_RES,
+        (1/8, 25):  1.8432,
         (0.125, 25): 1.8432,
     }
 
@@ -57,24 +62,35 @@ class VEML7700:
         self.dev = I2CWordDevice(bus, address)
 
         # Normalise / coerce types
-        self.gain = float(gain)
-        self.integration_time_ms = int(integration_time_ms)
+        gain = float(gain)
+        it   = int(integration_time_ms)
 
-        # Configure sensor
-        conf = self._build_conf_word(self.gain, self.integration_time_ms)
-        self.dev.write_u16(self.REG_ALS_CONF, conf)
+        # Snap to nearest allowed gain/IT (so auto-ranging works cleanly)
+        self.gain = min(self._ALLOWED_GAINS, key=lambda g: abs(g - gain))
+        self.integration_time_ms = min(self._ALLOWED_IT, key=lambda t: abs(t - it))
 
-        # Clear thresholds & power-saving for a clean start
-        self.dev.write_u16(self.REG_ALS_WH, 0x0000)
-        self.dev.write_u16(self.REG_ALS_WL, 0x0000)
-        self.dev.write_u16(self.REG_PSM,    0x0000)
+        # Configure sensor & compute resolution
+        self._apply_settings(initial=True)
 
-        time.sleep(self.integration_time_ms / 1000.0)
+    # ------------------------------------------------------------------
+    # Low-level / configuration helpers
+    # ------------------------------------------------------------------
 
-        self._resolution = self._RESOLUTION_LUX_PER_CT.get(
-            (self.gain, self.integration_time_ms),
-            0.2304
-        )
+    def _update_resolution(self):
+        """
+        Update self._resolution based on current gain & integration time.
+
+        Uses a direct lookup if available; otherwise scales from a known
+        baseline (gain=1/4, IT=100ms) assuming sensitivity ∝ gain * IT.
+        """
+        key = (self.gain, self.integration_time_ms)
+        if key in self._RESOLUTION_LUX_PER_CT:
+            self._resolution = self._RESOLUTION_LUX_PER_CT[key]
+            return
+
+        # Scale from baseline: lux/count ∝ 1 / (gain * IT)
+        scale = (self._BASE_GAIN * self._BASE_IT) / (self.gain * self.integration_time_ms)
+        self._resolution = self._BASE_RES * scale
 
     def _build_conf_word(self, gain: float, it_ms: int) -> int:
         """
@@ -82,8 +98,8 @@ class VEML7700:
         - ALS_SD bit (0) is set to 0 => power on
         - Interrupts disabled, persistence = 1
         """
-        gain_bits = self._GAIN_BITS.get(gain, self._GAIN_BITS[1/4])
-        it_bits   = self._IT_BITS.get(it_ms, self._IT_BITS[100])
+        gain_bits = self._GAIN_BITS.get(gain, self._GAIN_BITS[self._BASE_GAIN])
+        it_bits   = self._IT_BITS.get(it_ms, self._IT_BITS[self._BASE_IT])
 
         word = 0
         # Gain bits 12:11
@@ -91,10 +107,32 @@ class VEML7700:
         # Integration time bits 9:6
         word |= (it_bits & 0b1111) << 6
         # ALS_PERS bits 5:4 -> 00b (1 sample)
-        # Reserved bits already 0
         # ALS_INT_EN bit 1 -> 0 (INT disabled)
         # ALS_SD bit 0 -> 0 (power on)
         return word & 0xFFFF
+
+    def _apply_settings(self, initial: bool = False):
+        """
+        Write current gain/IT into the sensor and wait one integration period.
+        """
+        conf = self._build_conf_word(self.gain, self.integration_time_ms)
+        self.dev.write_u16(self.REG_ALS_CONF, conf)
+
+        if initial:
+            # Clear thresholds & power-saving for a clean start
+            self.dev.write_u16(self.REG_ALS_WH, 0x0000)
+            self.dev.write_u16(self.REG_ALS_WL, 0x0000)
+            self.dev.write_u16(self.REG_PSM,    0x0000)
+
+        # Wait at least one integration period for new config to take effect
+        time.sleep(self.integration_time_ms / 1000.0)
+
+        # Update lux resolution
+        self._update_resolution()
+
+    # ------------------------------------------------------------------
+    # Low-level sensor reads
+    # ------------------------------------------------------------------
 
     def read_id(self) -> int:
         """Return device ID (should be ~0xC481)."""
@@ -103,6 +141,7 @@ class VEML7700:
     def read_conf(self) -> int:
         """Return ALS_CONF register value."""
         return self.dev.read_u16(self.REG_ALS_CONF)
+
     def close(self):
         self.dev.close()
 
@@ -114,27 +153,94 @@ class VEML7700:
         """Return raw WHITE 16-bit count value."""
         return self.dev.read_u16(self.REG_WHITE)
 
-    def is_saturated(self, als_raw):
-        """Return true if the ALS is saturated"""
+    def is_saturated(self, als_raw: int) -> bool:
+        """Return True if the ALS reading is (likely) saturated."""
         return als_raw >= 65500
+
+    # ------------------------------------------------------------------
+    # Auto-ranging helpers
+    # ------------------------------------------------------------------
+
+    def _increase_sensitivity(self) -> bool:
+        """
+        Increase sensor sensitivity (for low light) by:
+          1. Increasing gain, then
+          2. Increasing integration time.
+        Returns True if a change was made.
+        """
+        # Try gain first
+        gi = self._ALLOWED_GAINS.index(self.gain)
+        if gi < len(self._ALLOWED_GAINS) - 1:
+            self.gain = self._ALLOWED_GAINS[gi + 1]
+            return True
+
+        # Then integration time
+        iti = self._ALLOWED_IT.index(self.integration_time_ms)
+        if iti < len(self._ALLOWED_IT) - 1:
+            self.integration_time_ms = self._ALLOWED_IT[iti + 1]
+            return True
+
+        # Already at maximum sensitivity
+        return False
+
+    def _decrease_sensitivity(self) -> bool:
+        """
+        Decrease sensor sensitivity (for bright light / saturation) by:
+          1. Decreasing integration time, then
+          2. Decreasing gain.
+        Returns True if a change was made.
+        """
+        # Reduce integration time first
+        iti = self._ALLOWED_IT.index(self.integration_time_ms)
+        if iti > 0:
+            self.integration_time_ms = self._ALLOWED_IT[iti - 1]
+            return True
+
+        # Then reduce gain
+        gi = self._ALLOWED_GAINS.index(self.gain)
+        if gi > 0:
+            self.gain = self._ALLOWED_GAINS[gi - 1]
+            return True
+
+        # Already at minimum sensitivity
+        return False
+    
+    # ------------------------------------------------------------------
+    # High-level API
+    # ------------------------------------------------------------------
 
     def read_lux(self) -> float:
         """
-        Return approximate lux based on current configuration.
-
-        For (gain=1/4, it=100 ms) or (gain=1/8, it=25 ms), the scaling constants are taken from Vishay’s
-        app note and example code. For other settings, this uses the same default resolution as gain=1/4,
-        100 ms unless _RESOLUTION_LUX_PER_CT is extended.
+        Return approximate lux based on current configuration, without
+        changing gain/IT.
         """
         als = self.read_als_raw()
-        lux = als * self._resolution
-        return lux
+        return als * self._resolution
 
-    def read(self):
+    def read(self, autorange: bool = True):
         """
         Return a tuple: (als_raw, white_raw, lux_estimate).
+
+        If autorange=True (default), this may adjust gain and/or integration
+        time to avoid saturation and improve low-light performance.
         """
         als = self.read_als_raw()
         white = self.read_white_raw()
+
+        if autorange:
+            # Saturation / very bright - decrease sensitivity
+            if als >= 65500:
+                if self._decrease_sensitivity():
+                    self._apply_settings()
+                    als = self.read_als_raw()
+                    white = self.read_white_raw()
+
+            # Very low readings - increase sensitivity
+            elif als < 50:
+                if self._increase_sensitivity():
+                    self._apply_settings()
+                    als = self.read_als_raw()
+                    white = self.read_white_raw()
+
         lux = als * self._resolution
         return als, white, lux
