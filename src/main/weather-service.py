@@ -3,7 +3,7 @@ import signal
 import threading
 import os
 from http.server import ThreadingHTTPServer
-from weather import BME280, Database, RequestHandler, Sampler
+from weather import BME280, Database, RequestHandler, Sampler, VEML7700
 
 stop = None
 
@@ -19,8 +19,11 @@ def main():
     ap = argparse.ArgumentParser(description="BME280 JSON HTTP server")
     ap.add_argument("--port", type=int, default=8080)
     ap.add_argument("--host", default="127.0.0.1", help="bind address (use 0.0.0.0 to expose on LAN)")
-    ap.add_argument("--bus", type=int, default=1)
-    ap.add_argument("--bme-addr", default="0x76")
+    ap.add_argument("--bus", type=int, default=1, help="I2C bus number")
+    ap.add_argument("--bme-addr", default="0x76", help="BME280 I2C address")
+    ap.add_argument("--veml-addr", default="0x10", help="VEML7700 I2C address")
+    ap.add_argument("--veml-gain", type=float, default=0.25, help="Gain (light sensor sensitivity)")
+    ap.add_argument("--veml-integration-ms", type=int, default=100, help="Integration time (light collection time to produce a reading), ms")
     ap.add_argument("--db", default=None, help="optional SQLite path to enable /api/last")
     ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
     ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
@@ -41,14 +44,18 @@ def main():
 
     # Create the wrapper to query the BME280
     addr = int(args.bme_addr, 16)
-    sensor = BME280(bus=args.bus, address=addr)
+    bme280 = BME280(bus=args.bus, address=addr)
+
+    # Create the wrapper to query the VEML770
+    addr = int(args.veml_addr, 16)
+    veml7700 = VEML7700(bus=args.bus, address=addr, gain=args.veml_gain, integration_time_ms=args.veml_integration_ms)
 
     # Create the database access wrapper
-    database = Database(args.db, args.retention, args.bus, args.bme_addr)
+    database = Database(args.db, args.retention, args.bus, args.bme_addr, args.veml_addr, args.veml_gain, args.veml_integration_ms)
     database.create_database()
 
     # Create and start the sampler
-    sampler = Sampler(sensor, database, args.interval)
+    sampler = Sampler(bme280, veml7700, database, args.interval)
     sampler.start()
 
     # Set up the request handler
@@ -65,7 +72,8 @@ def main():
             server.handle_request()
     finally:
         try:
-            sensor.bus.close()
+            bme280.bus.close()
+            veml7700.bus.close()
         except Exception:
             pass
         print("Server stopped.")

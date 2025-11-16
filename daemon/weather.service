@@ -8,8 +8,16 @@ Type=simple
 WorkingDirectory=/opt/weather
 EnvironmentFile=/opt/weather/weather.env
 ExecStart=/usr/bin/python3 -m main.weather-service \
-  --db ${DB_PATH} --retention ${RETENTION} --bus ${BUS} --bme-addr ${ADDR} \
-  --interval ${INTERVAL} --host ${HOST} --port ${PORT}
+  --db ${DB_PATH} \
+  --retention ${RETENTION} \
+  --bus ${BUS} \
+  --bme-addr ${BME_ADDR} \
+  --veml-addr ${VEML_ADDR} \
+  --veml-gain ${VEML_GAIN} \
+  --veml-integration-ms ${VEML_INTEGRATION_TIME} \
+  --interval ${INTERVAL} \
+  --host ${HOST} \
+  --port ${PORT}
 
 Restart=on-failure
 RestartSec=3
