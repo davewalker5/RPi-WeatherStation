@@ -62,6 +62,8 @@ class Sampler(threading.Thread):
         with self._lock:
             self.latest_veml = {
                 "time_utc": timestamp,
+                "gain": self.veml7700.gain,
+                "integration_time_ms": self.veml7700.integration_time_ms,
                 "als": als,
                 "white": white,
                 "illuminance_lux": round(lux, 2),

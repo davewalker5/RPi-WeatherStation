@@ -13,8 +13,8 @@ ExecStart=/usr/bin/python3 -m main.weather-service \
   --bus ${BUS} \
   --bme-addr ${BME_ADDR} \
   --veml-addr ${VEML_ADDR} \
-  --gain ${GAIN} \
-  --integration-ms ${INTEGRATION_TIME} \
+  --veml-gain ${VEML_GAIN} \
+  --veml-integration-ms ${VEML_INTEGRATION_TIME} \
   --interval ${INTERVAL} \
   --host ${HOST} \
   --port ${PORT}
