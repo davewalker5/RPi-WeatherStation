@@ -1,5 +1,6 @@
 import argparse
 import datetime as dt
+from smbus2 import SMBus
 from weather import BME280
 
 
@@ -10,8 +11,9 @@ def main():
     args = ap.parse_args()
 
     # Create the BME280 wrapper
+    bus = SMBus(args.bus)
     addr = int(args.bme_addr, 16)
-    sensor = BME280(bus=args.bus, address=addr)
+    sensor = BME280(bus, addr)
     
     # Read the sensors
     temperature, pressure, humidity = sensor.read()

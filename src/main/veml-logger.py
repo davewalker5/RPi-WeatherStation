@@ -4,6 +4,7 @@ import time
 import sys
 import os
 import datetime as dt
+from smbus2 import SMBus
 from weather import VEML7700, Database
 
 STOP = False
@@ -52,8 +53,9 @@ def main():
     signal.signal(signal.SIGTERM, _sig_handler)
 
     # Create the wrapper to query the BME280
+    bus = SMBus(args.bus)
     addr = int(args.veml_addr, 16)
-    sensor = VEML7700(bus=args.bus, address=addr, gain=args.veml_gain, integration_time_ms=args.veml_integration_ms)
+    sensor = VEML7700(bus, addr, args.veml_gain, args.veml_integration_ms)
 
     # Create the database access wrapper
     database = Database(args.db, args.retention, args.bus, 0, args.veml_addr, args.veml_gain, args.veml_integration_ms)

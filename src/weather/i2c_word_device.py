@@ -1,16 +1,12 @@
-from smbus2 import SMBus
-
-
 class I2CWordDevice:
     """
     Helper around SMBus for devices that use 16-bit registers with
     LSB-first order on the bus
     """
 
-    def __init__(self, bus: int, address: int):
-        self.bus_no = bus
+    def __init__(self, bus, address):
+        self.bus = bus
         self.address = address
-        self.bus = SMBus(bus)
 
     def close(self):
         self.bus.close()

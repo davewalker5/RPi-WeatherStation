@@ -1,5 +1,6 @@
 import argparse
 import datetime as dt
+from smbus2 import SMBus
 from weather import VEML7700
 
 
@@ -11,9 +12,10 @@ def main():
     ap.add_argument("--veml-integration-ms", type=int, default=100, help="Integration time (light collection time to produce a reading), ms")
     args = ap.parse_args()
 
-    # Create the BME280 wrapper
+    # Create the VEML7700 wrapper
+    bus = SMBus(args.bus)
     addr = int(args.veml_addr, 16)
-    sensor = VEML7700(bus=args.bus, address=addr, gain=args.veml_gain, integration_time_ms=args.veml_integration_ms)
+    sensor = VEML7700(bus, addr, args.veml_gain, args.veml_integration_ms)
     
     # Read the sensors
     als, white, lux = sensor.read()

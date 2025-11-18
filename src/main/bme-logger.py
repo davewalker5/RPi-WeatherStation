@@ -4,6 +4,7 @@ import time
 import sys
 import os
 import datetime as dt
+from smbus2 import SMBus
 from weather import BME280, Database
 
 STOP = False
@@ -49,8 +50,9 @@ def main():
     signal.signal(signal.SIGTERM, _sig_handler)
 
     # Create the wrapper to query the BME280
+    bus = SMBus(args.bus)
     addr = int(args.bme_addr, 16)
-    sensor = BME280(bus=args.bus, address=addr)
+    sensor = BME280(bus, addr)
 
     # Create the database access wrapper
     database = Database(args.db, args.retention, args.bus, args.bme_addr, 0, 0, 0)

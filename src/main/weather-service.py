@@ -2,6 +2,7 @@ import argparse
 import signal
 import threading
 import os
+from smbus2 import SMBus
 from http.server import ThreadingHTTPServer
 from weather import BME280, Database, RequestHandler, Sampler, VEML7700
 
@@ -43,12 +44,13 @@ def main():
     signal.signal(signal.SIGTERM, _sig_handler)
 
     # Create the wrapper to query the BME280
-    addr = int(args.bme_addr, 16)
-    bme280 = BME280(bus=args.bus, address=addr)
+    bus = SMBus(args.bus)
+    bme_addr = int(args.bme_addr, 16)
+    bme280 = BME280(bus, bme_addr)
 
     # Create the wrapper to query the VEML770
     addr = int(args.veml_addr, 16)
-    veml7700 = VEML7700(bus=args.bus, address=addr, gain=args.veml_gain, integration_time_ms=args.veml_integration_ms)
+    veml7700 = VEML7700(bus, addr, args.veml_gain, args.veml_integration_ms)
 
     # Create the database access wrapper
     database = Database(args.db, args.retention, args.bus, args.bme_addr, args.veml_addr, args.veml_gain, args.veml_integration_ms)
@@ -72,8 +74,7 @@ def main():
             server.handle_request()
     finally:
         try:
-            bme280.bus.close()
-            veml7700.bus.close()
+            bus.close()
         except Exception:
             pass
         print("Server stopped.")
