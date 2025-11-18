@@ -1,6 +1,10 @@
-from smbus2 import SMBus
 import time
 from os import environ
+
+try:
+    from smbus2 import SMBus
+except ImportError:
+    from ..i2c.mock_smbus import SMBus
 
 BUS = int(environ["BUS_NUMBER"])
 ADDR = int(environ["VEML_ADDR"], 16)

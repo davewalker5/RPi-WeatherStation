@@ -1,8 +1,11 @@
 import argparse
 import datetime as dt
-from smbus2 import SMBus
 from weather import VEML7700
 
+try:
+    from smbus2 import SMBus
+except ImportError:
+    from ..i2c.mock_smbus import SMBus
 
 def main():
     ap = argparse.ArgumentParser(description="VEML770 Sensor Check")

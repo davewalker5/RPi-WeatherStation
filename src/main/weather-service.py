@@ -2,9 +2,13 @@ import argparse
 import signal
 import threading
 import os
-from smbus2 import SMBus
 from http.server import ThreadingHTTPServer
 from weather import BME280, Database, RequestHandler, Sampler, VEML7700
+
+try:
+    from smbus2 import SMBus
+except ImportError:
+    from ..i2c.mock_smbus import SMBus
 
 stop = None
 

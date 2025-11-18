@@ -2,8 +2,8 @@ from .bme280_calibration import BME280Calibration
 
 
 class BME280Compensation(BME280Calibration):
-    def __init__(self, bus):
-        super().__init__(bus)
+    def __init__(self, sm_bus):
+        super().__init__(sm_bus)
 
     # ---- External API
     def compensate_temperature(self, adc_t):

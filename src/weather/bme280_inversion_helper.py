@@ -1,9 +1,10 @@
 from .bme280_compensation import BME280Compensation
 
 
-class InversionHelper(BME280Compensation):
-    def __init__(self, calibration):
-        self.calibration = calibration
+class BME280InversionHelper(BME280Compensation):
+    def __init__(self, sm_bus):
+        super().__init__(sm_bus)
+        self.sm_bus = sm_bus
 
     def _binary_search_adc(self, f, target, lo, hi, maximum_iterations, tolerance):
         """
@@ -39,7 +40,7 @@ class InversionHelper(BME280Compensation):
         adc_max = (1 << 20) - 1
 
         def f(adc_t):
-            _, temp_c = self.compensate_temperature(self.calibration, adc_t)
+            _, temp_c = self.compensate_temperature(adc_t)
             return temp_c
 
         return self._binary_search_adc(f, target, adc_min, adc_max, 40, 0.01)
@@ -49,7 +50,7 @@ class InversionHelper(BME280Compensation):
         adc_max = (1 << 20) - 1
 
         def f(adc_p):
-            pressure = self.compensate_pressure(self.calibration, adc_p, t_fine)
+            pressure = self.compensate_pressure(t_fine, adc_p)
             return pressure
 
         return self._binary_search_adc(f, target, adc_min, adc_max, 40, 0.1)
@@ -59,7 +60,7 @@ class InversionHelper(BME280Compensation):
         adc_max = (1 << 20) - 1
 
         def f(adc_h):
-            H = self.compensate_humidity(self.calibration, adc_h, t_fine)
+            H = self.compensate_humidity(t_fine, adc_h)
             return H
 
         return self._binary_search_adc(f, target, adc_min, adc_max, 40, 0.1)

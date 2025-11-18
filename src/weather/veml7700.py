@@ -1,5 +1,5 @@
 import time
-from .i2c_word_device import I2CWordDevice
+from ..i2c.i2c_word_device import I2CWordDevice
 
 
 class VEML7700:

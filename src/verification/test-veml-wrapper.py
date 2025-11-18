@@ -1,7 +1,11 @@
 import time
 from os import environ
-from smbus2 import SMBus
 from weather import VEML7700
+
+try:
+    from smbus2 import SMBus
+except ImportError:
+    from ..i2c.mock_smbus import SMBus
 
 def main():
     bus = SMBus(int(environ["BUS_NUMBER"]))
