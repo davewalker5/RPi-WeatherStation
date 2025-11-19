@@ -15,7 +15,7 @@ class SMBus:
         pass
 
     def read_byte_data(self, addr, reg):
-        return self.fixtures["calibration_bytes"].get(reg, 0x00)
+        return self.fixtures["trimming_parameters"].get(reg, 0x00)
 
     def read_i2c_block_data(self, addr, reg, length):
         key = (addr, reg)
