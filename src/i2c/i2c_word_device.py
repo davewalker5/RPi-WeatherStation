@@ -8,9 +8,6 @@ class I2CWordDevice:
         self.bus = bus
         self.address = address
 
-    def close(self):
-        self.bus.close()
-
     def write_u16(self, register: int, value: int):
         """
         Write a 16-bit value, LSB then MSB, to 'register'.

@@ -30,7 +30,8 @@ def main():
             print(f"ALS={als:5d}  WHITE={white:5d}  LUX≈{lux:8.2f}")
             time.sleep(1.0)
     finally:
-        sensor.close()
+        bus.close()
+
 
 if __name__ == "__main__":
     main()

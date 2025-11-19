@@ -44,7 +44,6 @@ def main():
     print()
 
     # Install signal handlers for graceful stop
-    signal.signal(signal.SIGINT, _sig_handler)
     signal.signal(signal.SIGTERM, _sig_handler)
 
     # Create the wrapper to query the BME280
@@ -76,12 +75,10 @@ def main():
     try:
         while not stop.is_set():
             server.handle_request()
+    except KeyboardInterrupt:
+        stop.set()
     finally:
-        try:
-            bus.close()
-        except Exception:
-            pass
-        print("Server stopped.")
+        bus.close()
 
 
 if __name__ == "__main__":

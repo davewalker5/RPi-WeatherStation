@@ -142,9 +142,6 @@ class VEML7700:
         """Return ALS_CONF register value."""
         return self.dev.read_u16(self.REG_ALS_CONF)
 
-    def close(self):
-        self.dev.close()
-
     def read_als_raw(self) -> int:
         """Return raw ALS 16-bit count value."""
         return self.dev.read_u16(self.REG_ALS)

@@ -50,7 +50,6 @@ def main():
     print()
 
     # Install signal handlers for graceful stop
-    signal.signal(signal.SIGINT, _sig_handler)
     signal.signal(signal.SIGTERM, _sig_handler)
 
     # Create the wrapper to query the BME280
@@ -69,21 +68,29 @@ def main():
 
     # Set up for readings at specified intervals
     next_t = time.monotonic()
-    while not STOP:
-        try:
-            # Purge old data
-            database.purge()
 
-            # Take the next readings
-            sample_sensors(sensor, database)
-        except OSError as ex:
-            ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-            print(f"{ts}  I2C error: {ex}; retrying in {args.interval}s", file=sys.stderr)
+    try:
+        global STOP
+        while not STOP:
+            try:
+                # Purge old data
+                database.purge()
 
-        # Wait for the specified interval
-        next_t += args.interval
-        delay = max(0.0, next_t - time.monotonic())
-        time.sleep(delay)
+                # Take the next readings
+                sample_sensors(sensor, database)
+            except OSError as ex:
+                ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
+                print(f"{ts}  I2C error: {ex}; retrying in {args.interval}s", file=sys.stderr)
+
+            # Wait for the specified interval
+            next_t += args.interval
+            delay = max(0.0, next_t - time.monotonic())
+            time.sleep(delay)
+    
+    except KeyboardInterrupt:
+        pass
+    finally:
+        bus.close()
 
 
 if __name__ == "__main__":

@@ -13,9 +13,15 @@ class SMBus:
         pass
 
     def read_byte_data(self, _, reg):
+        """
+        Read one of the trimming parameters
+        """
         return self.trimming_parameters.get(reg, 0x00)
 
     def read_i2c_block_data(self, addr, reg, length):
+        """
+        Read a measurement block
+        """
         key = (addr, reg)
         block = self.measurement_blocks[key]
         assert len(block) >= length
