@@ -31,7 +31,7 @@ def sample_sensors(sensor, database):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="BME280 → SQLite logger")
+    ap = argparse.ArgumentParser(description="BME280 to SQLite and Console Logger")
     ap.add_argument("--db", default="weather.db", help="SQLite database path")
     ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
     ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")

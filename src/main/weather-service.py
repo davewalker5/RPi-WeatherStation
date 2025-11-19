@@ -21,7 +21,7 @@ def _sig_handler(signum, frame):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="BME280 JSON HTTP server")
+    ap = argparse.ArgumentParser(description="Raspberry Pi Weather Service")
     ap.add_argument("--port", type=int, default=8080)
     ap.add_argument("--host", default="127.0.0.1", help="bind address (use 0.0.0.0 to expose on LAN)")
     ap.add_argument("--bus", type=int, default=1, help="I2C bus number")

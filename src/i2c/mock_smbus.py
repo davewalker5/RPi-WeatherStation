@@ -1,9 +1,7 @@
 class SMBus:
-    def __init__(self, bus_number):
-        self.fixtures = None
-
-    def set_fixtures(self, fixtures):
-        self.fixtures = fixtures
+    def __init__(self, _, trimming_parameters, measurement_blocks):
+        self.trimming_parameters = trimming_parameters
+        self.measurement_blocks = measurement_blocks
 
     def write_byte_data(self, addr, reg, value):
         pass
@@ -14,11 +12,11 @@ class SMBus:
     def close(self):
         pass
 
-    def read_byte_data(self, addr, reg):
-        return self.fixtures["trimming_parameters"].get(reg, 0x00)
+    def read_byte_data(self, _, reg):
+        return self.trimming_parameters.get(reg, 0x00)
 
     def read_i2c_block_data(self, addr, reg, length):
         key = (addr, reg)
-        block = self.fixtures["measurement_blocks"][key]
+        block = self.measurement_blocks[key]
         assert len(block) >= length
         return block[:length]
