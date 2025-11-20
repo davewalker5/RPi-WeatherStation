@@ -1,10 +1,7 @@
 import argparse
-from ..helpers.bme280_inversion_helper import BME280InversionHelper
-
-try:
-    from smbus2 import SMBus
-except ImportError:
-    from ..i2c.mock_smbus import SMBus
+import os
+from helpers.bme280_inversion_helper import BME280InversionHelper
+from smbus2 import SMBus
 
 
 def main():

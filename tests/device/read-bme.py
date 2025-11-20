@@ -1,17 +1,24 @@
 import argparse
+import os
 import datetime as dt
 from weather import BME280
+from smbus2 import SMBus
 
-try:
-    from smbus2 import SMBus
-except ImportError:
-    from ..i2c.mock_smbus import SMBus
 
 def main():
     ap = argparse.ArgumentParser(description="BME280 Sensor Check")
     ap.add_argument("--bus", type=int, default=0, help="I2C bus number (0 or 1 on Pi 1B)")
     ap.add_argument("--bme-addr", default="0x76", help="I2C address (0x76 or 0x77)")
     args = ap.parse_args()
+
+    # Show the argument values
+    print()
+    print(os.path.basename(__file__).upper())
+    print()
+    args_dict = vars(args)
+    for name, value in args_dict.items():
+        print(f"{name} : {value}")
+    print()
 
     # Create the BME280 wrapper
     bus = SMBus(args.bus)

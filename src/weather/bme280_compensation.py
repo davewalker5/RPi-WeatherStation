@@ -5,10 +5,9 @@ from .bme280_trimming_parameters import DIG_H1, DIG_H2, DIG_H3, DIG_H4, DIG_H5, 
 
 
 class BME280Compensation(BME280TrimmingParameters):
-    def __init__(self, sm_bus):
-        super().__init__(sm_bus)
+    def __init__(self, sm_bus, address):
+        super().__init__(sm_bus, address)
 
-    # ---- External API
     def compensate_temperature(self, adc_t):
         var1 = (((adc_t >> 3) - (self.get_trimming_parameter(DIG_T1) << 1)) * self.get_trimming_parameter(DIG_T2)) >> 11
         var2 = (((((adc_t >> 4) - self.get_trimming_parameter(DIG_T1)) * ((adc_t >> 4) - self.get_trimming_parameter(DIG_T1))) >> 12) * self.get_trimming_parameter(DIG_T3)) >> 14

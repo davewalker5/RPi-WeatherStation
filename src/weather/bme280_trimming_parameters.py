@@ -25,12 +25,13 @@ REG_E6 = 0xE6
 
 
 class BME280TrimmingParameters:
-    def __init__(self, sm_bus):
+    def __init__(self, sm_bus, address):
         self.sm_bus = sm_bus
+        self.addr = address
 
-        e4 = self._read_u16(DIG_H4)
-        e5 = self._read_u16(DIG_H5)
-        e6 = self._read_u16(REG_E6)
+        e4 = self._read_s8(DIG_H4)
+        e5 = self._read_u8(DIG_H5)
+        e6 = self._read_s8(REG_E6)
 
         self.trimming_parameters = {
             DIG_T1: self._read_u16(0x88),

@@ -1,11 +1,9 @@
 import argparse
+import os
 import datetime as dt
 from weather import VEML7700
+from smbus2 import SMBus
 
-try:
-    from smbus2 import SMBus
-except ImportError:
-    from ..i2c.mock_smbus import SMBus
 
 def main():
     ap = argparse.ArgumentParser(description="VEML770 Sensor Check")
@@ -14,6 +12,15 @@ def main():
     ap.add_argument("--veml-gain", type=float, default=0.25, help="Gain (light sensor sensitivity)")
     ap.add_argument("--veml-integration-ms", type=int, default=100, help="Integration time (light collection time to produce a reading), ms")
     args = ap.parse_args()
+
+    # Show the argument values
+    print()
+    print(os.path.basename(__file__).upper())
+    print()
+    args_dict = vars(args)
+    for name, value in args_dict.items():
+        print(f"{name} : {value}")
+    print()
 
     # Create the VEML7700 wrapper
     bus = SMBus(args.bus)

@@ -5,11 +5,8 @@ import sys
 import os
 import datetime as dt
 from weather import VEML7700, Database
+from smbus2 import SMBus
 
-try:
-    from smbus2 import SMBus
-except ImportError:
-    from ..i2c.mock_smbus import SMBus
 
 STOP = False
 

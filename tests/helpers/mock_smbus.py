@@ -1,5 +1,5 @@
-class SMBus:
-    def __init__(self, _, trimming_parameters, measurement_blocks):
+class MockSMBus:
+    def __init__(self, trimming_parameters, measurement_blocks):
         self.trimming_parameters = trimming_parameters
         self.measurement_blocks = measurement_blocks
 
