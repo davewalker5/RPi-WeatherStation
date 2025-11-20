@@ -12,7 +12,7 @@ class BME280(BME280Compensation):
         time.sleep(0.1)
 
     def read(self):
-        data = self.bus.read_i2c_block_data(self.address, 0xF7, 8)
+        data = self.sm_bus.read_i2c_block_data(self.address, 0xF7, 8)
         adc_p = (data[0] << 12) | (data[1] << 4) | (data[2] >> 4)
         adc_t = (data[3] << 12) | (data[4] << 4) | (data[5] >> 4)
         adc_h = (data[6] << 8) | data[7]

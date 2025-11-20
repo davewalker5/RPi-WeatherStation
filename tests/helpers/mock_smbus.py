@@ -22,7 +22,5 @@ class MockSMBus:
         """
         Read a measurement block
         """
-        key = (addr, reg)
-        block = self.measurement_blocks[key]
-        assert len(block) >= length
-        return block[:length]
+        assert len(self.measurement_blocks) >= length
+        return self.measurement_blocks[:length]
