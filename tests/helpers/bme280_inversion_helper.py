@@ -148,8 +148,8 @@ class BME280InversionHelper(BME280Compensation):
         t_fine, temperature = self.compensate_temperature(adc_t)
 
         # Debugging
-        self._debug_pressure_range(t_fine)
-        self._debug_humidity_range(t_fine)
+        # self._debug_pressure_range(t_fine)
+        # self._debug_humidity_range(t_fine)
 
         # Find adc_p and adc_h for t_fine
         adc_p = self._find_adc_p_for_pressure(target_pressure, t_fine, iterations, tolerance)
