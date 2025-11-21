@@ -1,7 +1,10 @@
 class MockSMBus:
-    def __init__(self, trimming_parameters, measurement_blocks):
+    BME280_ADDRESS = 0x76
+    VEML7700_ADDRESS = 0x10
+
+    def __init__(self, trimming_parameters, block_data):
         self.trimming_parameters = trimming_parameters
-        self.measurement_blocks = measurement_blocks
+        self.block_data = block_data
 
     def write_byte_data(self, addr, reg, value):
         pass
@@ -20,7 +23,12 @@ class MockSMBus:
 
     def read_i2c_block_data(self, addr, reg, length):
         """
-        Read a measurement block
+        Read block data from the specified register
         """
-        assert len(self.measurement_blocks) >= length
-        return self.measurement_blocks[:length]
+        match addr:
+            case self.BME280_ADDRESS:
+                return self.block_data[:length]
+            case self.VEML7700_ADDRESS:
+                return self.block_data[reg][:length]
+            case _:
+                return None

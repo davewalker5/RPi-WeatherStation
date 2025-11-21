@@ -13,5 +13,5 @@ def test_read_trimming_parameters():
 ])
 def test_read_i2c_block_data(fixture):
     bus = MockSMBus(BME280_TRIMMING_PARAMETERS, fixture)
-    actual = bus.read_i2c_block_data(None, None, len(fixture))
+    actual = bus.read_i2c_block_data(MockSMBus.BME280_ADDRESS, None, len(fixture))
     assert actual == fixture

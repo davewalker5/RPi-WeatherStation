@@ -3,7 +3,7 @@
 clear
 
 PROJECT_FOLDER=$( cd "$( dirname "$0" )/.." && pwd )
-source "$PROJECT_FOLDER/venv/bin/activate"
+. "$PROJECT_FOLDER/venv/bin/activate"
 export PYTHONPATH="$PROJECT_FOLDER/src:$PROJECT_FOLDER/tests"
 
 echo Project root      = $PROJECT_FOLDER

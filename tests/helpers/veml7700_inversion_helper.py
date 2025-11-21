@@ -57,6 +57,14 @@ class VEML7700InversionHelper:
         lsb = raw & 0xFF
         msb = (raw >> 8) & 0xFF
         return [lsb, msb]
+    
+    @property
+    def max_raw(self):
+        return 0xFFFF
+
+    @property
+    def max_lux(self):
+        return self._lux_from_raw(self.max_raw)
 
     def make_test_fixture(self, target_lux, target_white_raw=None):
         """
