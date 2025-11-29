@@ -1,6 +1,6 @@
-from smbus2 import SMBus
 import time
 from os import environ
+from smbus2 import SMBus
 
 BUS = int(environ["BUS_NUMBER"])
 ADDR = int(environ["VEML_ADDR"], 16)

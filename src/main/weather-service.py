@@ -4,6 +4,8 @@ import threading
 import os
 from http.server import ThreadingHTTPServer
 from weather import BME280, Database, RequestHandler, Sampler, VEML7700
+from smbus2 import SMBus
+
 
 stop = None
 
@@ -16,7 +18,7 @@ def _sig_handler(signum, frame):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="BME280 JSON HTTP server")
+    ap = argparse.ArgumentParser(description="Raspberry Pi Weather Service")
     ap.add_argument("--port", type=int, default=8080)
     ap.add_argument("--host", default="127.0.0.1", help="bind address (use 0.0.0.0 to expose on LAN)")
     ap.add_argument("--bus", type=int, default=1, help="I2C bus number")
@@ -39,16 +41,16 @@ def main():
     print()
 
     # Install signal handlers for graceful stop
-    signal.signal(signal.SIGINT, _sig_handler)
     signal.signal(signal.SIGTERM, _sig_handler)
 
     # Create the wrapper to query the BME280
-    addr = int(args.bme_addr, 16)
-    bme280 = BME280(bus=args.bus, address=addr)
+    bus = SMBus(args.bus)
+    bme_addr = int(args.bme_addr, 16)
+    bme280 = BME280(bus, bme_addr)
 
     # Create the wrapper to query the VEML770
     addr = int(args.veml_addr, 16)
-    veml7700 = VEML7700(bus=args.bus, address=addr, gain=args.veml_gain, integration_time_ms=args.veml_integration_ms)
+    veml7700 = VEML7700(bus, addr, args.veml_gain, args.veml_integration_ms)
 
     # Create the database access wrapper
     database = Database(args.db, args.retention, args.bus, args.bme_addr, args.veml_addr, args.veml_gain, args.veml_integration_ms)
@@ -70,13 +72,10 @@ def main():
     try:
         while not stop.is_set():
             server.handle_request()
+    except KeyboardInterrupt:
+        stop.set()
     finally:
-        try:
-            bme280.bus.close()
-            veml7700.bus.close()
-        except Exception:
-            pass
-        print("Server stopped.")
+        bus.close()
 
 
 if __name__ == "__main__":

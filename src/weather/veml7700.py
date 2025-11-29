@@ -1,5 +1,5 @@
 import time
-from .i2c_word_device import I2CWordDevice
+from i2c import I2CWordDevice
 
 
 class VEML7700:
@@ -141,9 +141,6 @@ class VEML7700:
     def read_conf(self) -> int:
         """Return ALS_CONF register value."""
         return self.dev.read_u16(self.REG_ALS_CONF)
-
-    def close(self):
-        self.dev.close()
 
     def read_als_raw(self) -> int:
         """Return raw ALS 16-bit count value."""

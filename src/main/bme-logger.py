@@ -5,6 +5,8 @@ import sys
 import os
 import datetime as dt
 from weather import BME280, Database
+from smbus2 import SMBus
+
 
 STOP = False
 
@@ -26,7 +28,7 @@ def sample_sensors(sensor, database):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="BME280 → SQLite logger")
+    ap = argparse.ArgumentParser(description="BME280 to SQLite and Console Logger")
     ap.add_argument("--db", default="weather.db", help="SQLite database path")
     ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
     ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
@@ -45,12 +47,12 @@ def main():
     print()
 
     # Install signal handlers for graceful stop
-    signal.signal(signal.SIGINT, _sig_handler)
     signal.signal(signal.SIGTERM, _sig_handler)
 
     # Create the wrapper to query the BME280
+    bus = SMBus(args.bus)
     addr = int(args.bme_addr, 16)
-    sensor = BME280(bus=args.bus, address=addr)
+    sensor = BME280(bus, addr)
 
     # Create the database access wrapper
     database = Database(args.db, args.retention, args.bus, args.bme_addr, 0, 0, 0)
@@ -63,21 +65,29 @@ def main():
 
     # Set up for readings at specified intervals
     next_t = time.monotonic()
-    while not STOP:
-        try:
-            # Purge old data
-            database.purge()
 
-            # Take the next readings
-            sample_sensors(sensor, database)
-        except OSError as ex:
-            ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-            print(f"{ts}  I2C error: {ex}; retrying in {args.interval}s", file=sys.stderr)
+    try:
+        global STOP
+        while not STOP:
+            try:
+                # Purge old data
+                database.purge()
 
-        # Wait for the specified interval
-        next_t += args.interval
-        delay = max(0.0, next_t - time.monotonic())
-        time.sleep(delay)
+                # Take the next readings
+                sample_sensors(sensor, database)
+            except OSError as ex:
+                ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
+                print(f"{ts}  I2C error: {ex}; retrying in {args.interval}s", file=sys.stderr)
+
+            # Wait for the specified interval
+            next_t += args.interval
+            delay = max(0.0, next_t - time.monotonic())
+            time.sleep(delay)
+    
+    except KeyboardInterrupt:
+        pass
+    finally:
+        bus.close()
 
 
 if __name__ == "__main__":

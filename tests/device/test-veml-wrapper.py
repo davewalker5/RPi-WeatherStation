@@ -1,10 +1,13 @@
 import time
-from weather import VEML7700
 from os import environ
+from weather import VEML7700
+from smbus2 import SMBus
+
 
 def main():
+    bus = SMBus(int(environ["BUS_NUMBER"]))
     sensor = VEML7700(
-        bus=int(environ["BUS_NUMBER"]),
+        bus=bus,
         address=int(environ["VEML_ADDR"], 16),
         gain=float(environ["VEML_GAIN"]),
         integration_time_ms=int(environ["VEML_INTEGRATION_TIME"])
@@ -24,7 +27,8 @@ def main():
             print(f"ALS={als:5d}  WHITE={white:5d}  LUX≈{lux:8.2f}")
             time.sleep(1.0)
     finally:
-        sensor.close()
+        bus.close()
+
 
 if __name__ == "__main__":
     main()

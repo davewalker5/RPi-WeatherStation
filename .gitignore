@@ -1,3 +1,5 @@
 .DS_Store
 bme280.db
 *.zip
+__pycache__
+venv/

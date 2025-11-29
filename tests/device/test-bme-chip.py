@@ -1,5 +1,5 @@
-from smbus2 import SMBus
 from os import environ
+from smbus2 import SMBus
 
 bus_num = int(environ["BUS_NUMBER"])
 addr = int(environ["BME_ADDR"], 16)

@@ -1,6 +1,8 @@
 import argparse
+import os
 import datetime as dt
 from weather import BME280
+from smbus2 import SMBus
 
 
 def main():
@@ -9,9 +11,19 @@ def main():
     ap.add_argument("--bme-addr", default="0x76", help="I2C address (0x76 or 0x77)")
     args = ap.parse_args()
 
+    # Show the argument values
+    print()
+    print(os.path.basename(__file__).upper())
+    print()
+    args_dict = vars(args)
+    for name, value in args_dict.items():
+        print(f"{name} : {value}")
+    print()
+
     # Create the BME280 wrapper
+    bus = SMBus(args.bus)
     addr = int(args.bme_addr, 16)
-    sensor = BME280(bus=args.bus, address=addr)
+    sensor = BME280(bus, addr)
     
     # Read the sensors
     temperature, pressure, humidity = sensor.read()
