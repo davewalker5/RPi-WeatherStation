@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-PROJECT_FOLDER=$( cd "$( dirname "$0" )/.." && pwd )
+# Get the absolute path to this file and then use it to get the project path
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+PROJECT_FOLDER=$( cd "$( dirname "$SCRIPT_PATH" )/.." && pwd )
+
+# Set the environment
 export PYTHONPATH="$PROJECT_FOLDER/src:$PROJECT_FOLDER/tests"
 export BUS_NUMBER=0
 export BME_ADDR=0x76

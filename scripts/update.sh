@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-PROJECT_FOLDER=$( cd "$( dirname "$0" )/.." && pwd )
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+PROJECT_FOLDER=$( cd "$( dirname "$SCRIPT_PATH" )/.." && pwd )
 cd "$PROJECT_FOLDER"
 . "$PROJECT_FOLDER/venv/bin/activate"
 
