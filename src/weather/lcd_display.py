@@ -39,6 +39,10 @@ class LCDDisplay(threading.Thread):
         bme = self.sampler.get_latest_bme()
         self._display_reading(bme, "humidity_pct", "H", f"%")
 
+    def _display_illuminance(self):
+        bme = self.sampler.get_latest_veml()
+        self._display_reading(bme, "illuminance_lux", "I", f" lux")
+
     def run(self):
         """
         Run the LCD display event loop
@@ -47,7 +51,8 @@ class LCDDisplay(threading.Thread):
         functions = [
             self._display_temperature,
             self._display_pressure,
-            self._display_humidity
+            self._display_humidity,
+            self._display_illuminance
         ]
 
         # Initialise the callback index
