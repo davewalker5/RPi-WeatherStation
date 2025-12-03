@@ -28,7 +28,7 @@ class LCDDisplay(threading.Thread):
         if bme:
             self._display_string(bme["time_utc"], f"T = {bme['temperature_c']:.2f}{DEGREE}C")
         else:
-            self._display_string(datetime.datetime.now, "No reading")
+            self._display_string(datetime.datetime.now(), "No reading")
 
     def run(self):
         """
