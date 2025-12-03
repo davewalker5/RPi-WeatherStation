@@ -15,7 +15,8 @@ ExecStart=/usr/bin/python3 -m main.weather-service \
   --veml-addr ${VEML_ADDR} \
   --veml-gain ${VEML_GAIN} \
   --veml-integration-ms ${VEML_INTEGRATION_TIME} \
-  --interval ${INTERVAL} \
+  --lcd-addr ${LCD_ADDR} \
+  --sample-interval ${INTERVAL} \
   --host ${HOST} \
   --port ${PORT}
 
