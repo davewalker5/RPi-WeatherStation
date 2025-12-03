@@ -12,5 +12,7 @@ python3 "$PROJECT_FOLDER/src/main/weather-service.py" \
     --veml-integration-ms $VEML_INTEGRATION_TIME \
     --lcd-addr $LCD_ADDR \
     --db "$PROJECT_FOLDER/data/weather.db" \
+    --sample-interval $SAMPLE_INTERVAL \
+    --display-interval $DISPLAY_INTERVAL \
     --host 0.0.0.0 \
     --port 8080

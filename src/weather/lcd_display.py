@@ -18,28 +18,51 @@ class LCDDisplay(threading.Thread):
         self.interval = float(interval)
         self.stop = threading.Event()
 
-    def _display_string(self, timestamp, text):
+    def _display_reading(self, values, member, label, units):
+        # Extract the timestamp and reading
+        timestamp = values["time_utc"] if values else datetime.datetime.now()
+        text = f"{label}={values[member]}{units}" if values else f"No {label} reading"
+
+        # Display the timestamp and reading
         self.lcd.clear()
         self.lcd.write(timestamp.strftime('%H:%M:%S'), line=1)
         self.lcd.write(text, line=2)
 
-    def display_temperature(self):
+    def _display_temperature(self):
         bme = self.sampler.get_latest_bme()
-        if bme:
-            self._display_string(bme["time_utc"], f"T = {bme['temperature_c']:.2f}{DEGREE}C")
-        else:
-            self._display_string(datetime.datetime.now(), "No reading")
+        self._display_reading(bme, "temperature_c", "T", f"{DEGREE}C")
+
+    def _display_pressure(self):
+        bme = self.sampler.get_latest_bme()
+        self._display_reading(bme, "pressure_hpa", "P", f" hPa")
+
+    def _display_humidity(self):
+        bme = self.sampler.get_latest_bme()
+        self._display_reading(bme, "humidity_pct", "H", f"%")
 
     def run(self):
         """
         Run the LCD display event loop
         """
+        # Define the callback functions to display values
+        functions = [
+            self._display_temperature,
+            self._display_pressure,
+            self._display_humidity
+        ]
+
+        # Initialise the callback index
+        index = 0
+
         # Start the timer and loop until we're interrupted
         next_tick = time.monotonic()
         logging.info(f"LCD display started: interval={self.interval:.3f} s")
         while not self.stop.is_set():
             try:
-                self.display_temperature()
+                functions[index]()
+                index = index + 1
+                if index >= len(functions):
+                    index = 0
 
             except Exception as ex:
                 logging.warning("Display error: %s", ex)
