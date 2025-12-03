@@ -20,12 +20,11 @@ class LCDDisplay(threading.Thread):
 
     def _display_reading(self, values, member, label, units):
         # Extract the timestamp and reading
-        timestamp = values["time_utc"] if values else datetime.datetime.now()
         text = f"{label}={values[member]}{units}" if values else f"No {label} reading"
 
         # Display the timestamp and reading
         self.lcd.clear()
-        self.lcd.write(timestamp.strftime('%H:%M:%S'), line=1)
+        self.lcd.write(datetime.datetime.now().strftime('%H:%M:%S'), line=1)
         self.lcd.write(text, line=2)
 
     def _display_temperature(self):
