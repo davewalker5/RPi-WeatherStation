@@ -27,7 +27,7 @@ def main():
     ap.add_argument("--veml-addr", default="0x10", help="VEML7700 I2C address")
     ap.add_argument("--veml-gain", type=float, default=0.25, help="Gain (light sensor sensitivity)")
     ap.add_argument("--veml-integration-ms", type=int, default=100, help="Integration time (light collection time to produce a reading), ms")
-    ap.add_argument("--lcd_addr", default="0x27", help="LCD display address")
+    ap.add_argument("--lcd-addr", default="0x27", help="LCD display address")
     ap.add_argument("--db", default=None, help="optional SQLite path to enable /api/last")
     ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
     ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
