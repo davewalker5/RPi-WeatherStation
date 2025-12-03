@@ -19,9 +19,9 @@ class LCDDisplay(threading.Thread):
         self.stop = threading.Event()
 
     def _display_string(self, timestamp, text):
-        text = f"{timestamp.strftime('%H:%M:%S')} : {text}"
         self.lcd.clear()
-        self.lcd.write(text, line=1)
+        self.lcd.write(timestamp.strftime('%H:%M:%S'), line=1)
+        self.lcd.write(text, line=2)
 
     def display_temperature(self):
         bme = self.sampler.get_latest_bme()
