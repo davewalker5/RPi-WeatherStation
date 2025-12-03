@@ -1,4 +1,4 @@
-from i2c_lcd import I2CLCD
+from i2c import I2CLCD
 from time import sleep
 from os import environ
 
