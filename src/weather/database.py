@@ -54,13 +54,13 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 
 class Database:
-    db_path: str | None = None
-    retention: int | None = None
-    bus: int | None = None
-    bme_addr: str | None = None
-    veml_addr: str | None = None
-    veml_gain: float | None = None
-    veml_integration_time_ms: int | None = None
+    db_path: str = None
+    retention: int = None
+    bus: int = None
+    bme_addr: str = None
+    veml_addr: str = None
+    veml_gain: float = None
+    veml_integration_time_ms: int = None
 
     def __init__(self, db_path, retention, bus, bme_address, veml_address, veml_gain, veml_integration_time_ms):
         self.db_path = db_path
