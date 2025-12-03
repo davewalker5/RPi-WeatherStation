@@ -31,6 +31,7 @@ def main():
     ap.add_argument("--db", default=None, help="optional SQLite path to enable /api/last")
     ap.add_argument("--sample-interval", type=float, default=60.0, help="Sample interval seconds")
     ap.add_argument("--display-interval", type=float, default=5.0, help="Display interval seconds")
+    ap.add_argument("--no-lcd", action="store_true", help="Suppress output to the LCD display")
     ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
     args = ap.parse_args()
 
@@ -64,10 +65,11 @@ def main():
     sampler.start()
 
     # Create and start the LCD display handler
-    lcd_addr = int(args.lcd_addr, 16)
-    lcd = I2CLCD(bus, lcd_addr)
-    display = LCDDisplay(lcd, sampler, args.display_interval)
-    display.start()
+    if not args.no_lcd:
+        lcd_addr = int(args.lcd_addr, 16)
+        lcd = I2CLCD(bus, lcd_addr)
+        display = LCDDisplay(lcd, sampler, args.display_interval)
+        display.start()
 
     # Set up the request handler
     RequestHandler.sampler = sampler
