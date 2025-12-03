@@ -6,7 +6,7 @@ PROJECT_FOLDER=$( cd "$( dirname "$SCRIPT_PATH" )/.." && pwd )
 
 # Set the environment
 export PYTHONPATH="$PROJECT_FOLDER/src:$PROJECT_FOLDER/tests"
-export BUS_NUMBER=0
+export BUS_NUMBER=1
 export BME_ADDR=0x76
 export VEML_ADDR=0x10
 export VEML_GAIN=0.25
