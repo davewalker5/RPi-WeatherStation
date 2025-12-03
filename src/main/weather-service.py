@@ -3,7 +3,8 @@ import signal
 import threading
 import os
 from http.server import ThreadingHTTPServer
-from weather import BME280, Database, RequestHandler, Sampler, VEML7700
+from i2c import I2CLCD
+from weather import BME280, Database, RequestHandler, Sampler, VEML7700, LCDDisplay
 from smbus2 import SMBus
 
 
@@ -26,8 +27,10 @@ def main():
     ap.add_argument("--veml-addr", default="0x10", help="VEML7700 I2C address")
     ap.add_argument("--veml-gain", type=float, default=0.25, help="Gain (light sensor sensitivity)")
     ap.add_argument("--veml-integration-ms", type=int, default=100, help="Integration time (light collection time to produce a reading), ms")
+    ap.add_argument("--lcd-addr", default="0x27", help="LCD display address")
     ap.add_argument("--db", default=None, help="optional SQLite path to enable /api/last")
-    ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
+    ap.add_argument("--sample-interval", type=float, default=60.0, help="Sample interval seconds")
+    ap.add_argument("--display-interval", type=float, default=5.0, help="Display interval seconds")
     ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
     args = ap.parse_args()
 
@@ -57,8 +60,14 @@ def main():
     database.create_database()
 
     # Create and start the sampler
-    sampler = Sampler(bme280, veml7700, database, args.interval)
+    sampler = Sampler(bme280, veml7700, database, args.sample_interval)
     sampler.start()
+
+    # Create and start the LCD display handler
+    lcd_addr = int(args.lcd_addr, 16)
+    lcd = I2CLCD(bus, lcd_addr)
+    display = LCDDisplay(lcd, sampler, args.display_interval)
+    display.start()
 
     # Set up the request handler
     RequestHandler.sampler = sampler
