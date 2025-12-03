@@ -14,10 +14,9 @@ LCD_LINE_1 = 0x80  # First line
 LCD_LINE_2 = 0xC0  # Second line
 
 class I2CLCD:
-    def __init__(self, i2c_addr, i2c_bus):
-        self.addr = i2c_addr
-        self.bus = SMBus(i2c_bus)
-
+    def __init__(self, bus, addr):
+        self.bus = bus
+        self.addr = addr
         self._init_lcd()
 
     def _init_lcd(self):
