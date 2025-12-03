@@ -24,7 +24,7 @@ class LCDDisplay(threading.Thread):
 
     def display_temperature(self):
         bme = self.sampler.get_latest_bme()
-        self._display_string(bme["time_utc"], f"T = {bme[""]:.2f}{DEGREE}C")
+        self._display_string(bme["time_utc"], f"T = {bme['temperature_c']:.2f}{DEGREE}C")
 
     def run(self):
         """
