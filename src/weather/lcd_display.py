@@ -2,6 +2,7 @@
 import logging
 import threading
 import time
+import datetime
 from .sampler import Sampler
 
 DEGREE = chr(223)
@@ -27,7 +28,7 @@ class LCDDisplay(threading.Thread):
         if bme:
             self._display_string(bme["time_utc"], f"T = {bme['temperature_c']:.2f}{DEGREE}C")
         else:
-            self._display_string("No temperature")
+            self._display_string(datetime.datetime.now, "No reading")
 
     def run(self):
         """
