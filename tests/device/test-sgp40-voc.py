@@ -4,7 +4,7 @@ from sensirion_gas_index_algorithm.voc_algorithm import VocAlgorithm
 from os import environ
 
 bus_num = int(environ["BUS_NUMBER"])
-addr = int(environ["LCD_ADDR"], 16)
+addr = int(environ["SGP40_ADDR"], 16)
 
 MEASURE_CMD = [0x26, 0x0F]  # "measure raw" command, no humidity compensation
 

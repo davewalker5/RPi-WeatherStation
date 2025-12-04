@@ -3,7 +3,7 @@ import time
 from os import environ
 
 bus_num = int(environ["BUS_NUMBER"])
-addr = int(environ["LCD_ADDR"], 16)
+addr = int(environ["SGP40_ADDR"], 16)
 
 # "Measure raw signal" command (no humidity compensation)
 MEASURE_CMD = [0x26, 0x0F]
