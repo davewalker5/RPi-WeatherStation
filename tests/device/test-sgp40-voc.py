@@ -20,7 +20,7 @@ def _crc8_sgp40(two_bytes: bytes) -> int:
     return crc
 
 
-def read_sgp40_sraw(bus: SMBus, addr: int = 0x59) -> int | None:
+def read_sgp40_sraw(bus: SMBus, addr: int = 0x59) -> int:
     """
     Read one SRAW VOC sample from SGP40.
     Returns the raw value (0..65535) or None on error/CRC failure.
