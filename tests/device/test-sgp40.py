@@ -5,6 +5,8 @@ from os import environ
 bus_num = int(environ["BUS_NUMBER"])
 addr = int(environ["SGP40_ADDR"], 16)
 
+print(f"Bus = {bus_num}, Address = {addr}")
+
 # "Measure raw signal" command (no humidity compensation)
 MEASURE_CMD = [0x26, 0x0F]
 
