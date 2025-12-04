@@ -13,6 +13,7 @@ export BME_ADDR=0x76
 export VEML_ADDR=0x10
 export VEML_GAIN=0.25
 export VEML_INTEGRATION_TIME=100
+export SGP40_ADDR = 0x59
 export LCD_ADDR=0x27
 
 # Make sure the data folder exists so the database can be created if needed
@@ -25,6 +26,7 @@ echo "BME280 Address   : $BME_ADDR"
 echo "VEML7700 Address : $VEML_ADDR"
 echo "VEML7700 Gain    : $VEML_GAIN"
 echo "VEML7700 IT      : $VEML_INTEGRATION_TIME"
+echo "SGP40 Address    : $SGP40_ADDR"
 echo "LCD Address      : $LCD_ADDRESS"
 echo "Sample Interval  : $SAMPLE_INTERVAL"
 echo "Display Interval : $DISPLAY_INTERVAL"
