@@ -1,5 +1,4 @@
 import time
-from i2c import I2CWordDevice
 
 
 class VEML7700:
@@ -58,8 +57,8 @@ class VEML7700:
         (0.125, 25): 1.8432,
     }
 
-    def __init__(self, bus, address, gain, integration_time_ms):
-        self.dev = I2CWordDevice(bus, address)
+    def __init__(self, i2c_device, gain, integration_time_ms):
+        self.i2c_device = i2c_device
 
         # Normalise / coerce types
         gain = float(gain)
@@ -116,13 +115,13 @@ class VEML7700:
         Write current gain/IT into the sensor and wait one integration period.
         """
         conf = self._build_conf_word(self.gain, self.integration_time_ms)
-        self.dev.write_u16(self.REG_ALS_CONF, conf)
+        self.i2c_device.write_u16(self.REG_ALS_CONF, conf)
 
         if initial:
             # Clear thresholds & power-saving for a clean start
-            self.dev.write_u16(self.REG_ALS_WH, 0x0000)
-            self.dev.write_u16(self.REG_ALS_WL, 0x0000)
-            self.dev.write_u16(self.REG_PSM,    0x0000)
+            self.i2c_device.write_u16(self.REG_ALS_WH, 0x0000)
+            self.i2c_device.write_u16(self.REG_ALS_WL, 0x0000)
+            self.i2c_device.write_u16(self.REG_PSM,    0x0000)
 
         # Wait at least one integration period for new config to take effect
         time.sleep(self.integration_time_ms / 1000.0)
@@ -136,19 +135,19 @@ class VEML7700:
 
     def read_id(self) -> int:
         """Return device ID (should be ~0xC481)."""
-        return self.dev.read_u16(0x07)
+        return self.i2c_device.read_u16(0x07)
 
     def read_conf(self) -> int:
         """Return ALS_CONF register value."""
-        return self.dev.read_u16(self.REG_ALS_CONF)
+        return self.i2c_device.read_u16(self.REG_ALS_CONF)
 
     def read_als_raw(self) -> int:
         """Return raw ALS 16-bit count value."""
-        return self.dev.read_u16(self.REG_ALS)
+        return self.i2c_device.read_u16(self.REG_ALS)
 
     def read_white_raw(self) -> int:
         """Return raw WHITE 16-bit count value."""
-        return self.dev.read_u16(self.REG_WHITE)
+        return self.i2c_device.read_u16(self.REG_WHITE)
 
     def is_saturated(self, als_raw: int) -> bool:
         """Return True if the ALS reading is (likely) saturated."""

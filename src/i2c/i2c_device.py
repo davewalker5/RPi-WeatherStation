@@ -1,12 +1,16 @@
-class I2CWordDevice:
+from typing import Sequence
+
+
+class I2CDevice:
     """
     Helper around SMBus for devices that use 16-bit registers with
     LSB-first order on the bus
     """
 
-    def __init__(self, bus, address):
+    def __init__(self, bus, address, msg_module):
         self.bus = bus
         self.address = address
+        self.msg_module = msg_module
 
     def write_u16(self, register: int, value: int):
         """
@@ -23,3 +27,23 @@ class I2CWordDevice:
         """
         data = self.bus.read_i2c_block_data(self.address, register, 2)
         return data[0] | (data[1] << 8)
+
+    def write_bytes_raw(self, data):
+        """
+        Raw I2C write
+        """
+        if isinstance(data, bytes):
+            data_bytes = data
+        else:
+            data_bytes = bytes(data)
+
+        msg = self.msg_module.write(self.address, data_bytes)
+        self.bus.i2c_rdwr(msg)
+
+    def read_bytes_raw(self, length: int) -> bytes:
+        """
+        Raw I2C read
+        """
+        msg = self.msg_module.read(self.address, length)
+        self.bus.i2c_rdwr(msg)
+        return bytes(msg)

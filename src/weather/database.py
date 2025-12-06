@@ -30,6 +30,19 @@ CREATE TABLE IF NOT EXISTS VEML7700_READINGS (
     IsSaturated         INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS IX_VEML7700_READINGS_TS ON VEML7700_READINGS (Timestamp);
+""",
+"""
+CREATE TABLE IF NOT EXISTS SGP40_READINGS (
+    Id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    Timestamp           TEXT NOT NULL,
+    SRAW                INTEGER NOT NULL,
+    VOCIndex            INTEGER NOT NULL,
+    Label               TEXT NOT NULL,
+    Rating              TEXT NOT NULL,
+    Bus                 INTEGER NOT NULL,
+    Address             TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS IX_SGP40_READINGS_TS ON SGP40_READINGS (Timestamp);
 """
 ]
 
@@ -39,6 +52,9 @@ DELETE FROM BME280_READINGS WHERE Timestamp <= ?;
 """,
 """
 DELETE FROM VEML7700_READINGS WHERE Timestamp <= ?;
+""",
+"""
+DELETE FROM SGP40_READINGS WHERE Timestamp <= ?;
 """
 ]
 
@@ -52,6 +68,11 @@ INSERT INTO VEML7700_READINGS (Timestamp, ALS, White, Illuminance, IsSaturated, 
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 """
 
+INSERT_SGP_SQL = """
+INSERT INTO SGP40_READINGS (Timestamp, SRAW, VOCIndex, Label, Rating, Bus, Address)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+"""
+
 
 class Database:
     db_path: str = None
@@ -61,8 +82,9 @@ class Database:
     veml_addr: str = None
     veml_gain: float = None
     veml_integration_time_ms: int = None
+    sgp_addr: str = None
 
-    def __init__(self, db_path, retention, bus, bme_address, veml_address, veml_gain, veml_integration_time_ms):
+    def __init__(self, db_path, retention, bus, bme_address, veml_address, veml_gain, veml_integration_time_ms, sgp_address):
         self.db_path = db_path
         self.retention = retention
         self.bus = bus
@@ -70,6 +92,7 @@ class Database:
         self.veml_address = veml_address
         self.veml_gain = veml_gain
         self.veml_integration_time_ms = veml_integration_time_ms
+        self.sgp_address = sgp_address
         self.last_purged = None
 
     def create_database(self):
@@ -112,6 +135,15 @@ class Database:
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
         cur.execute(INSERT_VEML_SQL, (timestamp, als, white, lux, is_saturated, self.veml_gain, self.veml_integration_time_ms, self.bus, self.veml_address))
+        con.commit()
+        con.close()
+        return timestamp
+
+    def insert_sgp_row(self, sraw, index, label, rating):
+        timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
+        con = sqlite3.connect(self.db_path)
+        cur = con.cursor()
+        cur.execute(INSERT_SGP_SQL, (timestamp, sraw, index, label, rating, self.bus, self.sgp_address))
         con.commit()
         con.close()
         return timestamp

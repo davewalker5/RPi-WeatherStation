@@ -1,0 +1,24 @@
+import time
+from os import environ
+import datetime as dt
+from weather import BME280
+from smbus2 import SMBus
+
+
+def main():
+    bus = SMBus(int(environ["BUS_NUMBER"]))
+    addr = int(environ["BME_ADDR"], 16)
+    sensor = BME280(bus, addr)
+
+    try:
+        while True:
+            temperature, pressure, humidity = sensor.read()
+            timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
+            print(f"{timestamp} T={temperature:.2f}°C  P={pressure:.2f} hPa  H={humidity:.2f}%")
+            time.sleep(1.0)
+    finally:
+        bus.close()
+
+
+if __name__ == "__main__":
+    main()

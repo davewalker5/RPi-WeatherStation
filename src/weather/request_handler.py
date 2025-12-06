@@ -37,18 +37,31 @@ class RequestHandler(BaseHTTPRequestHandler):
         readings = self.sampler.get_latest_veml()
         return self._json(200, readings)
 
+    def _latest_sgp_readings(self):
+        """
+        Handle a request for the latest SGP40 readings captured by the sampler
+        """
+        readings = self.sampler.get_latest_sgp()
+        return self._json(200, readings)
+
     def do_GET(self):
         """
         Handle a GET request
         """
-        if self.path.casefold() == "/api/health":
-            return self._health()
 
-        if self.path.casefold() == "/api/bme":
-            return self._latest_bme_readings()
+        # Define handlers by routes
+        routes = {
+            "/api/health" : self._health,
+            "/api/bme": self._latest_bme_readings,
+            "/api/veml": self._latest_veml_readings,
+            "/api/sgp": self._latest_sgp_readings,
+        }
 
-        if self.path.casefold() == "/api/veml":
-            return self._latest_veml_readings()
+        # If the current route is in the dictionary, call the handler and return the
+        # result
+        route = self.path.casefold()
+        if route in routes:
+            return routes[route]()
 
         # Any other route generates a 404 error 
         return self._json(404, {"error": "not found"})
