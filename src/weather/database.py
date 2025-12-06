@@ -65,8 +65,8 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 """
 
 INSERT_SGP_SQL = """
-INSERT INTO SGP40_READINGS (Timestamp, SRAW, Index, Label)
-VALUES (?, ?, ?, ?);
+INSERT INTO SGP40_READINGS (Timestamp, SRAW, VOCIndex, Label, Bus, Address)
+VALUES (?, ?, ?, ?, ?, ?);
 """
 
 
