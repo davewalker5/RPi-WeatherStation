@@ -64,7 +64,7 @@ def main():
 
     # If one-shot has been specified, sample the sensor, display the results and exit
     if args.once:
-        sample_sensors(sensor, database)
+        sample_sensors(sensor, database, True)
         return
 
     try:
