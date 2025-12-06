@@ -104,18 +104,18 @@ class SGP40:
 
     def _classify_voc_index(self, index: int) -> str:
         """
-        Simple human-readable classification for display / logs.
+        Convert a VOC index to a simple star-rating
         """
         if index < 80:
-            return "Excellent"
+            return "*****"
         elif index < 120:
-            return "Good"
+            return "****"
         elif index < 160:
-            return "Moderate"
+            return "***"
         elif index < 220:
-            return "Unhealthy"
+            return "**"
         else:
-            return "Very Unhealthy"
+            return "*"
 
     # ---------- public API ----------
 
