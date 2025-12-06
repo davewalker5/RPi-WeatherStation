@@ -5,9 +5,9 @@ import sys
 import os
 import datetime as dt
 from weather import SGP40, Database
+from i2c import I2CDevice
 from smbus2 import SMBus, i2c_msg
 from sensirion_gas_index_algorithm.voc_algorithm import VocAlgorithm
-from i2c import I2CDevice
 
 
 STOP = False
@@ -56,7 +56,7 @@ def main():
     # Install signal handlers for graceful stop
     signal.signal(signal.SIGTERM, _sig_handler)
 
-    # Create the wrapper to query the BME280
+    # Create the wrapper to query the SGP40
     bus = SMBus(args.bus)
     addr = int(args.sgp_addr, 16)
     i2c_device = I2CDevice(bus, addr, i2c_msg)

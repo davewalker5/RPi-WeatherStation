@@ -71,7 +71,7 @@ def classify_voc_index(index: int) -> str:
 
 def main():
     bus_num = int(environ["BUS_NUMBER"])
-    addr = int(environ["SGP40_ADDR"], 16)
+    addr = int(environ["SGP_ADDR"], 16)
 
     print(f"Bus = {bus_num}, Address = {addr} (0x{addr:02X})")
 

@@ -10,9 +10,11 @@ python3 "$PROJECT_FOLDER/src/main/weather-service.py" \
     --veml-addr $VEML_ADDR \
     --veml-gain $VEML_GAIN \
     --veml-integration-ms $VEML_INTEGRATION_TIME \
+    --sgp-addr $SGP_ADDR \
     --lcd-addr $LCD_ADDR \
     --db "$PROJECT_FOLDER/data/weather.db" \
     --sample-interval $SAMPLE_INTERVAL \
     --display-interval $DISPLAY_INTERVAL \
     --host 0.0.0.0 \
-    --port 8080
+    --port 8080 \
+    "$@"

@@ -6,6 +6,6 @@ PROJECT_FOLDER=$( cd "$( dirname "$SCRIPT_PATH" )/.." && pwd )
 
 python3 "$PROJECT_FOLDER/src/main/sgp-logger.py" \
     --bus $BUS_NUMBER \
-    --sgp-addr $SGP40_ADDR \
+    --sgp-addr $SGP_ADDR \
     --db "$PROJECT_FOLDER/data/weather.db" \
     "$@"

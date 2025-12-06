@@ -9,7 +9,7 @@ from sensirion_gas_index_algorithm.voc_algorithm import VocAlgorithm
 
 def main():
     bus = SMBus(int(environ["BUS_NUMBER"]))
-    addr = int(environ["SGP40_ADDR"], 16)
+    addr = int(environ["SGP_ADDR"], 16)
     i2c_device = I2CDevice(bus, addr, i2c_msg)
     sensor = SGP40(i2c_device, VocAlgorithm() )
 

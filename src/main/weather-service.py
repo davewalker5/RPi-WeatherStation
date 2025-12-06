@@ -4,8 +4,9 @@ import threading
 import os
 from http.server import ThreadingHTTPServer
 from i2c import I2CLCD, I2CDevice
-from weather import BME280, Database, RequestHandler, Sampler, VEML7700, LCDDisplay
+from weather import BME280, Database, RequestHandler, Sampler, VEML7700, LCDDisplay, SGP40
 from smbus2 import SMBus, i2c_msg
+from sensirion_gas_index_algorithm.voc_algorithm import VocAlgorithm
 
 
 stop = None
@@ -27,6 +28,7 @@ def main():
     ap.add_argument("--veml-addr", default="0x10", help="VEML7700 I2C address")
     ap.add_argument("--veml-gain", type=float, default=0.25, help="Gain (light sensor sensitivity)")
     ap.add_argument("--veml-integration-ms", type=int, default=100, help="Integration time (light collection time to produce a reading), ms")
+    ap.add_argument("--sgp-addr", default="59", help="SPG40 I2C address")
     ap.add_argument("--lcd-addr", default="0x27", help="LCD display address")
     ap.add_argument("--db", default=None, help="optional SQLite path to enable /api/last")
     ap.add_argument("--sample-interval", type=float, default=60.0, help="Sample interval seconds")
@@ -53,16 +55,21 @@ def main():
     bme280 = BME280(bus, bme_addr)
 
     # Create the wrapper to query the VEML770
-    addr = int(args.veml_addr, 16)
-    i2c_device = I2CDevice(bus, addr, i2c_msg)
+    veml_addr = int(args.veml_addr, 16)
+    i2c_device = I2CDevice(bus, veml_addr, i2c_msg)
     veml7700 = VEML7700(i2c_device, args.veml_gain, args.veml_integration_ms)
 
+    # Create the wrapper to query the SGP40
+    sgp_addr = int(args.sgp_addr, 16)
+    i2c_device = I2CDevice(bus, sgp_addr, i2c_msg)
+    sgp40 = SGP40(i2c_device, VocAlgorithm())
+
     # Create the database access wrapper
-    database = Database(args.db, args.retention, args.bus, args.bme_addr, args.veml_addr, args.veml_gain, args.veml_integration_ms)
+    database = Database(args.db, args.retention, args.bus, args.bme_addr, args.veml_addr, args.veml_gain, args.veml_integration_ms, args.sgp_addr)
     database.create_database()
 
     # Create and start the sampler
-    sampler = Sampler(bme280, veml7700, database, args.sample_interval)
+    sampler = Sampler(bme280, veml7700, database, args.sample_interval, sgp40)
     sampler.start()
 
     # Create and start the LCD display handler
