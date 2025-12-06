@@ -84,7 +84,7 @@ class Sampler(threading.Thread):
             timestamp = self.database.insert_sgp_row(sraw, voc_index, voc_label)
             logging.info(f"{timestamp}  SRAW={sraw}  VOC Index={voc_index}  VOC Label={voc_label}")
         else:
-            timestamp = dt.datetime.now(dt.timezone.utc)
+            timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
         return timestamp, sraw, voc_index, voc_label
 
     def _set_latest_sgp(self, timestamp, sraw, voc_index, voc_label):
