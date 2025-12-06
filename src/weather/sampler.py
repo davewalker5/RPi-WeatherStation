@@ -79,10 +79,10 @@ class Sampler(threading.Thread):
         """
         Sample the SGP40 sensors, write the results to the database and log them
         """
-        sraw, voc_index, voc_label = self.sgp40.read(humidity, temperature)
+        sraw, voc_index, voc_label, voc_rating = self.sgp40.read(humidity, temperature)
         if capture_readings:
-            timestamp = self.database.insert_sgp_row(sraw, voc_index, voc_label)
-            logging.info(f"{timestamp}  SRAW={sraw}  VOC Index={voc_index}  VOC Label={voc_label}")
+            timestamp = self.database.insert_sgp_row(sraw, voc_index, voc_label, voc_rating)
+            logging.info(f"{timestamp}  SRAW={sraw}  VOC Index={voc_index}  VOC Label={voc_label}  Rating={voc_rating}")
         else:
             timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
         return timestamp, sraw, voc_index, voc_label
