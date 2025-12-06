@@ -28,20 +28,24 @@ class LCDDisplay(threading.Thread):
         self.lcd.write(text, line=2)
 
     def _display_temperature(self):
-        bme = self.sampler.get_latest_bme()
-        self._display_reading(bme, "temperature_c", "T", f"{DEGREE}C")
+        values = self.sampler.get_latest_bme()
+        self._display_reading(values, "temperature_c", "T", f"{DEGREE}C")
 
     def _display_pressure(self):
-        bme = self.sampler.get_latest_bme()
-        self._display_reading(bme, "pressure_hpa", "P", f" hPa")
+        values = self.sampler.get_latest_bme()
+        self._display_reading(values, "pressure_hpa", "P", f" hPa")
 
     def _display_humidity(self):
-        bme = self.sampler.get_latest_bme()
-        self._display_reading(bme, "humidity_pct", "H", f"%")
+        values = self.sampler.get_latest_bme()
+        self._display_reading(values, "humidity_pct", "H", f"%")
 
     def _display_illuminance(self):
-        bme = self.sampler.get_latest_veml()
-        self._display_reading(bme, "illuminance_lux", "I", f" lux")
+        values = self.sampler.get_latest_veml()
+        self._display_reading(values, "illuminance_lux", "I", f" lux")
+
+    def _display_air_quality(self):
+        values = self.sampler.get_latest_sgp()
+        self._display_reading(values, "voc_label", "Q", None)
 
     def run(self):
         """
