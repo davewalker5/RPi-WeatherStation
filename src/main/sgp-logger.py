@@ -33,7 +33,6 @@ def main():
     ap = argparse.ArgumentParser(description="SGP40 to SQLite and Console Logger")
     ap.add_argument("--db", default="weather.db", help="SQLite database path")
     ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
-    ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
     ap.add_argument("--bus", type=int, default=0, help="I2C bus number")
     ap.add_argument("--sgp-addr", default="0x10", help="SGP40 I2C address")
     ap.add_argument("--once", action="store_true", help="Take one reading and exit")
@@ -80,10 +79,10 @@ def main():
                 sample_sensors(sensor, database)
             except OSError as ex:
                 ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-                print(f"{ts}  I2C error: {ex}; retrying in {args.interval}s", file=sys.stderr)
+                print(f"{ts}  I2C error: {ex}", file=sys.stderr)
 
             # Wait for the specified interval
-            next_t += args.interval
+            next_t += 1.0
             delay = max(0.0, next_t - time.monotonic())
             time.sleep(delay)
     
