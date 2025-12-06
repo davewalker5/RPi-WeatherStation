@@ -28,7 +28,7 @@ class I2CDevice:
         data = self.bus.read_i2c_block_data(self.address, register, 2)
         return data[0] | (data[1] << 8)
 
-    def write_bytes_raw(self, data: Sequence[int] | bytes):
+    def write_bytes_raw(self, data):
         """
         Raw I2C write
         """
