@@ -15,9 +15,9 @@ def main():
 
     try:
         while True:
-            result = sensor.read()
+            sraw, voc_index, voc_label = sensor.read()
             timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-            print(f"{timestamp}  SRAW: {result['sraw']}  VOC Index: {result['voc_index']}   {result['voc_label']}")
+            print(f"{timestamp}  SRAW: {sraw}  VOC Index: {voc_index}   {voc_label}")
             time.sleep(1.0)
     finally:
         bus.close()

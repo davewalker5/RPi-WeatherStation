@@ -138,8 +138,4 @@ class SGP40:
             voc_index = int(self._voc.process(sraw))
             voc_label = self._classify_voc_index(voc_index)
 
-        return {
-            "sraw": sraw,
-            "voc_index": voc_index,
-            "voc_label": voc_label,
-        }
+        return sraw, voc_index, voc_label

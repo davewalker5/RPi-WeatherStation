@@ -24,9 +24,9 @@ def sample_sensors(sensor, database):
     """
     Sample the SGP40 sensors, write the results to the database and echo them on the terminal
     """
-    sraw, index, label = sensor.read()
-    timestamp = database.insert_sgp_row(sraw, index, label)
-    print(f"{timestamp}  SRAW: {sraw}  VOC Index: {index}   {label}")
+    sraw, voc_index, voc_label = sensor.read()
+    timestamp = database.insert_sgp_row(sraw, voc_index, voc_label)
+    print(f"{timestamp}  SRAW: {sraw}  VOC Index: {voc_index}   {voc_label}")
 
 
 def main():
