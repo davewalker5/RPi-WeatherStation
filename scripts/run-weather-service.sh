@@ -16,5 +16,5 @@ python3 "$PROJECT_FOLDER/src/main/weather-service.py" \
     --sample-interval $SAMPLE_INTERVAL \
     --display-interval $DISPLAY_INTERVAL \
     --host 0.0.0.0 \
-    --port 8080 \
+    --port $PI_PORT \
     "$@"

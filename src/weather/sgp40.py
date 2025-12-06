@@ -133,6 +133,7 @@ class SGP40:
 
         voc_index = None
         voc_label = None
+        voc_rating = None
 
         if self._voc is not None:
             voc_index = int(self._voc.process(sraw))

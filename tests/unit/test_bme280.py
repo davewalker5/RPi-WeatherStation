@@ -87,7 +87,7 @@ HUMIDITY_CLIP_HIGH = {
     HUMIDITY_CLIP_HIGH
 ])
 def test_bme280_wrapper(fixture):
-    bus = MockSMBus(BME280_TRIMMING_PARAMETERS, fixture["block"])
+    bus = MockSMBus(BME280_TRIMMING_PARAMETERS, fixture["block"], None)
     sensor = BME280(bus=bus, address=MockSMBus.BME280_ADDRESS)
 
     T, P, H = sensor.read()
