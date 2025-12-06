@@ -3,9 +3,9 @@ import signal
 import threading
 import os
 from http.server import ThreadingHTTPServer
-from i2c import I2CLCD
+from i2c import I2CLCD, I2CDevice
 from weather import BME280, Database, RequestHandler, Sampler, VEML7700, LCDDisplay
-from smbus2 import SMBus
+from smbus2 import SMBus, i2c_msg
 
 
 stop = None
@@ -54,7 +54,8 @@ def main():
 
     # Create the wrapper to query the VEML770
     addr = int(args.veml_addr, 16)
-    veml7700 = VEML7700(bus, addr, args.veml_gain, args.veml_integration_ms)
+    i2c_device = I2CDevice(bus, addr, i2c_msg)
+    veml7700 = VEML7700(i2c_device, args.veml_gain, args.veml_integration_ms)
 
     # Create the database access wrapper
     database = Database(args.db, args.retention, args.bus, args.bme_addr, args.veml_addr, args.veml_gain, args.veml_integration_ms)

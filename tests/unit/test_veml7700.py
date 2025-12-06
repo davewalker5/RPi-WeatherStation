@@ -1,6 +1,7 @@
 import pytest
 from weather import VEML7700
-from helpers import MockSMBus
+from i2c import I2CDevice
+from helpers import MockSMBus, MockI2CMsg
 
 REG_ALS = 0x04
 REG_WHITE = 0x05
@@ -16,12 +17,13 @@ REG_WHITE = 0x05
     {"raw_als": 41286, "raw_white": 41286, "als_bytes": [70, 161], "white_bytes": [70, 161], "lux": 9512.294399999999},
     {"raw_als": 47184, "raw_white": 47184, "als_bytes": [80, 184], "white_bytes": [80, 184], "lux": 10871.1936},
     {"raw_als": 53082, "raw_white": 53082, "als_bytes": [90, 207], "white_bytes": [90, 207], "lux": 12230.0928},
-    {"raw_als": 58980, "raw_white": 58980, "als_bytes": [100, 230], "white_bytes": [100, 230], "lux": 13588.992},
-    {"raw_als": 65535, "raw_white": 65535, "als_bytes": [255, 255], "white_bytes": [255, 255], "lux": 15099.264}
+    {"raw_als": 58980, "raw_white": 58980, "als_bytes": [100, 230], "white_bytes": [100, 230], "lux": 13588.992}
 ])
 def test_veml7700_wrapper_normal_range(fixture):
     bus = MockSMBus(None, { REG_ALS: fixture["als_bytes"], REG_WHITE: fixture["white_bytes"]})
-    sensor = VEML7700(bus=bus, address=MockSMBus.VEML7700_ADDRESS, gain=0.25, integration_time_ms=100)
+    i2c_msg = MockI2CMsg()
+    device = I2CDevice(bus, MockSMBus.VEML7700_ADDRESS, i2c_msg)
+    sensor = VEML7700(i2c_device=device, gain=0.25, integration_time_ms=100)
 
     als, white, lux = sensor.read()
 

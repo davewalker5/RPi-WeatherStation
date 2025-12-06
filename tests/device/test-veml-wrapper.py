@@ -1,14 +1,16 @@
 import time
 from os import environ
 from weather import VEML7700
-from smbus2 import SMBus
+from smbus2 import SMBus, i2c_msg
+from i2c import I2CDevice
 
 
 def main():
     bus = SMBus(int(environ["BUS_NUMBER"]))
+    addr = int(args.veml_addr, 16)
+    i2c_device = I2CDevice(bus, addr, i2c_msg)
     sensor = VEML7700(
-        bus=bus,
-        address=int(environ["VEML_ADDR"], 16),
+        i2c_device,
         gain=float(environ["VEML_GAIN"]),
         integration_time_ms=int(environ["VEML_INTEGRATION_TIME"])
     )

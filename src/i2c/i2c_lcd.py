@@ -1,4 +1,3 @@
-from smbus2 import SMBus
 from time import sleep
 
 # PCF8574 pin mapping (typical for most 1602 I2C backpacks)

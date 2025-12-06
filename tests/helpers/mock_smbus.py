@@ -5,6 +5,7 @@ class MockSMBus:
     def __init__(self, trimming_parameters, block_data):
         self.trimming_parameters = trimming_parameters
         self.block_data = block_data
+        self.i2c_messages = []
 
     def write_byte_data(self, addr, reg, value):
         pass
@@ -32,3 +33,9 @@ class MockSMBus:
                 return self.block_data[reg][:length]
             case _:
                 return None
+
+    def i2c_rdwr(self, *msgs):
+        """
+        Send multiple I2C message objects in one transaction
+        """
+        self.i2c_messages.append(msgs)

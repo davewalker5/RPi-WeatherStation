@@ -6,6 +6,7 @@ from .lcd_display import LCDDisplay
 from .request_handler import RequestHandler
 from .sampler import Sampler
 from .veml7700 import VEML7700
+from .sgp40 import SGP40
 
 
 __all__ = [
@@ -16,5 +17,6 @@ __all__ = [
     "LCDDisplay",
     "RequestHandler",
     "Sampler",
-    "VEML7700"
+    "VEML7700",
+    "SGP40"
 ]
