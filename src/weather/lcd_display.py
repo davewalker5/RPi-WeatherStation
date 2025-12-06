@@ -26,7 +26,7 @@ class LCDDisplay(threading.Thread):
 
     def _display_reading(self, values, member, label, units):
         # Extract the timestamp and reading
-        text = f"{label}={values[member]}{units}" if values else f"No {label} reading"
+        text = f"{label} = {values[member]}{units}" if values else f"No {label} reading"
 
         # Display the timestamp and reading
         self.lcd.clear()
@@ -51,7 +51,7 @@ class LCDDisplay(threading.Thread):
 
     def _display_air_quality(self):
         values = self.sampler.get_latest_sgp()
-        self._display_reading(values, "voc_label", "Q", None)
+        self._display_reading(values, "voc_label", "Quality", "")
 
     def run(self):
         """
