@@ -17,6 +17,12 @@ class LCDDisplay(threading.Thread):
         self.sampler = sampler
         self.interval = float(interval)
         self.stop = threading.Event()
+        self.started = False
+
+    def _display_startup(self):
+        self.lcd.clear()
+        self.lcd.write("Weather Service", line=1)
+        self.lcd.write("starting ...", line=2)
 
     def _display_reading(self, values, member, label, units):
         # Extract the timestamp and reading
@@ -56,7 +62,8 @@ class LCDDisplay(threading.Thread):
             self._display_temperature,
             self._display_pressure,
             self._display_humidity,
-            self._display_illuminance
+            self._display_illuminance,
+            self._display_air_quality
         ]
 
         # Initialise the callback index
@@ -67,10 +74,16 @@ class LCDDisplay(threading.Thread):
         logging.info(f"LCD display started: interval={self.interval:.3f} s")
         while not self.stop.is_set():
             try:
-                functions[index]()
-                index = index + 1
-                if index >= len(functions):
-                    index = 0
+                # First time, show the startup messages - this gives the sampler a chance
+                # to start recording readings
+                if not self.started:
+                    self.started = True
+                    self._display_startup()
+                else:
+                    functions[index]()
+                    index = index + 1
+                    if index >= len(functions):
+                        index = 0
 
             except Exception as ex:
                 logging.warning("Display error: %s", ex)
