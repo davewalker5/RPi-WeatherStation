@@ -2,6 +2,7 @@
 import logging
 import threading
 import time
+import datetime as dt
 from .bme280 import BME280
 from .veml7700 import VEML7700
 from .sgp40 import SGP40
@@ -82,14 +83,16 @@ class Sampler(threading.Thread):
         if capture_readings:
             timestamp = self.database.insert_sgp_row(sraw, voc_index, voc_label)
             logging.info(f"{timestamp}  SRAW={sraw}  VOC Index={voc_index}  VOC Label={voc_label}")
+        else:
+            timestamp = dt.datetime.now(dt.timezone.utc)
         return timestamp, sraw, voc_index, voc_label
 
     def _set_latest_sgp(self, timestamp, sraw, voc_index, voc_label):
         """
-        Store the latest VEML7700 readings
+        Store the latest SGP40 readings
         """
         with self._lock:
-            self.latest_veml = {
+            self.latest_sgp = {
                 "time_utc": timestamp,
                 "sraw": sraw,
                 "voc_index": voc_index,
@@ -104,6 +107,7 @@ class Sampler(threading.Thread):
 
         # Start the timer and loop until we're interrupted. The loop needs to report at the specified interval
         # but sample the SGP40 at ~1s intervals to match the requirements of the Sensiron VOC algorithm
+        timestamp = Non
         counter = self.interval - 1
         while not self.stop.is_set():
             try:
@@ -129,7 +133,7 @@ class Sampler(threading.Thread):
 
                 # Sample the SGP40 sensors, passing in the latest values from the BM280 for humidity
                 # and temperature compensation 
-                sraw, voc_index, voc_label = self._sample_sgp_sensors(self.latest_bme["humidity_pct"], self.latest_bme["temperature_c"], capture_readings)
+                timestamp, sraw, voc_index, voc_label = self._sample_sgp_sensors(self.latest_bme["humidity_pct"], self.latest_bme["temperature_c"], capture_readings)
                 self._set_latest_sgp(timestamp, sraw, voc_index, voc_label)
 
             except Exception as ex:

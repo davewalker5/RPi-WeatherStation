@@ -41,7 +41,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         """
         Handle a request for the latest SGP40 readings captured by the sampler
         """
-        readings = self.sampler.sgp()
+        readings = self.sampler.get_latest_sgp()
         return self._json(200, readings)
 
     def do_GET(self):
