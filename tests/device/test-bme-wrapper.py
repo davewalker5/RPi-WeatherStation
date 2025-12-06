@@ -1,6 +1,7 @@
 import time
 from os import environ
 from weather import BME280
+from smbus2 import SMBus
 
 
 def main():
