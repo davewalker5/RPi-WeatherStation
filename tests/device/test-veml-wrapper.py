@@ -8,7 +8,7 @@ from i2c import I2CDevice
 
 def main():
     bus = SMBus(int(environ["BUS_NUMBER"]))
-    addr = int(args.veml_addr, 16)
+    addr = int(environ["VEML_ADDR"], 16)
     i2c_device = I2CDevice(bus, addr, i2c_msg)
     sensor = VEML7700(
         i2c_device,
