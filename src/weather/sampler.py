@@ -107,7 +107,6 @@ class Sampler(threading.Thread):
 
         # Start the timer and loop until we're interrupted. The loop needs to report at the specified interval
         # but sample the SGP40 at ~1s intervals to match the requirements of the Sensiron VOC algorithm
-        timestamp = Non
         counter = self.interval - 1
         while not self.stop.is_set():
             try:
