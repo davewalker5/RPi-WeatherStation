@@ -87,7 +87,7 @@ class Sampler(threading.Thread):
             timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
         return timestamp, sraw, voc_index, voc_label
 
-    def _set_latest_sgp(self, timestamp, sraw, voc_index, voc_label):
+    def _set_latest_sgp(self, timestamp, sraw, voc_index, voc_label, voc_rating):
         """
         Store the latest SGP40 readings
         """
@@ -96,7 +96,8 @@ class Sampler(threading.Thread):
                 "time_utc": timestamp,
                 "sraw": sraw,
                 "voc_index": voc_index,
-                "voc_label": voc_label
+                "voc_label": voc_label,
+                "voc_rating": voc_rating
             }
 
     def run(self):
@@ -132,8 +133,8 @@ class Sampler(threading.Thread):
 
                 # Sample the SGP40 sensors, passing in the latest values from the BM280 for humidity
                 # and temperature compensation 
-                timestamp, sraw, voc_index, voc_label = self._sample_sgp_sensors(self.latest_bme["humidity_pct"], self.latest_bme["temperature_c"], capture_readings)
-                self._set_latest_sgp(timestamp, sraw, voc_index, voc_label)
+                timestamp, sraw, voc_index, voc_label, voc_rating = self._sample_sgp_sensors(self.latest_bme["humidity_pct"], self.latest_bme["temperature_c"], capture_readings)
+                self._set_latest_sgp(timestamp, sraw, voc_index, voc_label, voc_rating)
 
             except Exception as ex:
                 logging.warning("Sampler error: %s", ex)

@@ -51,7 +51,7 @@ class LCDDisplay(threading.Thread):
 
     def _display_air_quality(self):
         values = self.sampler.get_latest_sgp()
-        self._display_reading(values, "voc_label", "Quality", "")
+        self._display_reading(values, "voc_rating", "VOC", "")
 
     def run(self):
         """

@@ -24,14 +24,14 @@ def sample_sensors(sensor, database, report_readings):
     """
     Sample the SGP40 sensors, write the results to the database and echo them on the terminal
     """
-    sraw, voc_index, voc_label = sensor.read()
+    sraw, voc_index, voc_label, voc_rating = sensor.read()
     if report_readings:
         # Purge old data
         database.purge()
 
         # Store and report the reading
-        timestamp = database.insert_sgp_row(sraw, voc_index, voc_label)
-        print(f"{timestamp}  SRAW: {sraw}  VOC Index: {voc_index}   {voc_label}")
+        timestamp = database.insert_sgp_row(sraw, voc_index, voc_label, voc_rating)
+        print(f"{timestamp}  SRAW: {sraw}  VOC Index: {voc_index}  Assessment: {voc_label}  Rating: {voc_rating}")
 
 
 def main():

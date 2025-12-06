@@ -107,15 +107,15 @@ class SGP40:
         Convert a VOC index to a simple star-rating
         """
         if index < 80:
-            return "*****"
+            return ("Excellent", "*****")
         elif index < 120:
-            return "****"
+            return ("Good", "****")
         elif index < 160:
-            return "***"
+            return ("Moderate", "***")
         elif index < 220:
-            return "**"
+            return ("Unhealthy", "**")
         else:
-            return "*"
+            return ("Very Unhealthy", "*")
 
     # ---------- public API ----------
 
@@ -136,6 +136,6 @@ class SGP40:
 
         if self._voc is not None:
             voc_index = int(self._voc.process(sraw))
-            voc_label = self._classify_voc_index(voc_index)
+            voc_label, voc_rating = self._classify_voc_index(voc_index)
 
-        return sraw, voc_index, voc_label
+        return sraw, voc_index, voc_label, voc_rating

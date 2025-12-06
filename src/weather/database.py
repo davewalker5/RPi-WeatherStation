@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS SGP40_READINGS (
     SRAW                INTEGER NOT NULL,
     VOCIndex            INTEGER NOT NULL,
     Label               TEXT NOT NULL,
+    Rating              TEXT NOT NULL,
     Bus                 INTEGER NOT NULL,
     Address             TEXT NOT NULL
 );
@@ -68,8 +69,8 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 """
 
 INSERT_SGP_SQL = """
-INSERT INTO SGP40_READINGS (Timestamp, SRAW, VOCIndex, Label, Bus, Address)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO SGP40_READINGS (Timestamp, SRAW, VOCIndex, Label, Rating, Bus, Address)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 """
 
 
@@ -138,11 +139,11 @@ class Database:
         con.close()
         return timestamp
 
-    def insert_sgp_row(self, sraw, index, label):
+    def insert_sgp_row(self, sraw, index, label, rating):
         timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
-        cur.execute(INSERT_SGP_SQL, (timestamp, sraw, index, label, self.bus, self.sgp_address))
+        cur.execute(INSERT_SGP_SQL, (timestamp, sraw, index, label, rating, self.bus, self.sgp_address))
         con.commit()
         con.close()
         return timestamp
