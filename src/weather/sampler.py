@@ -110,34 +110,34 @@ class Sampler(threading.Thread):
         # but sample the SGP40 at ~1s intervals to match the requirements of the Sensiron VOC algorithm
         counter = self.interval - 1
         while not self.stop.is_set():
-            # try:
-            # Increment the reporting counter
-            counter += 1
-            capture_readings = counter == self.interval
+            try:
+                # Increment the reporting counter
+                counter += 1
+                capture_readings = counter == self.interval
 
-            # If we've reached the capture interval, capture sensors other than the SGP40
-            if capture_readings:
-                # Reset the reporting counter
-                counter = 0
+                # If we've reached the capture interval, capture sensors other than the SGP40
+                if capture_readings:
+                    # Reset the reporting counter
+                    counter = 0
 
-                # Purge old data
-                self.database.purge()
+                    # Purge old data
+                    self.database.purge()
 
-                # Take the next set of BME280 readings and cache them as the latest readings
-                timestamp, temperature, pressure, humidity = self._sample_bme_sensors()
-                self._set_latest_bme(timestamp, temperature, pressure, humidity)
+                    # Take the next set of BME280 readings and cache them as the latest readings
+                    timestamp, temperature, pressure, humidity = self._sample_bme_sensors()
+                    self._set_latest_bme(timestamp, temperature, pressure, humidity)
 
-                # Take the next set of VEML7700 readings and cache them as the latest readings
-                timestamp, als, white, lux, is_saturated = self._sample_veml_sensors()
-                self._set_latest_veml(timestamp, als, white, lux, is_saturated)
+                    # Take the next set of VEML7700 readings and cache them as the latest readings
+                    timestamp, als, white, lux, is_saturated = self._sample_veml_sensors()
+                    self._set_latest_veml(timestamp, als, white, lux, is_saturated)
 
-            # Sample the SGP40 sensors, passing in the latest values from the BM280 for humidity
-            # and temperature compensation 
-            timestamp, sraw, voc_index, voc_label, voc_rating = self._sample_sgp_sensors(self.latest_bme["humidity_pct"], self.latest_bme["temperature_c"], capture_readings)
-            self._set_latest_sgp(timestamp, sraw, voc_index, voc_label, voc_rating)
+                # Sample the SGP40 sensors, passing in the latest values from the BM280 for humidity
+                # and temperature compensation 
+                timestamp, sraw, voc_index, voc_label, voc_rating = self._sample_sgp_sensors(self.latest_bme["humidity_pct"], self.latest_bme["temperature_c"], capture_readings)
+                self._set_latest_sgp(timestamp, sraw, voc_index, voc_label, voc_rating)
 
-            # except Exception as ex:
-            #     logging.warning("Sampler error: %s", ex)
+            except Exception as ex:
+                logging.warning("Sampler error: %s", ex)
 
             # Wait for 1s
             time.sleep(1)
