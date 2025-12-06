@@ -14,10 +14,11 @@ endpoints=(
 
 # Iterate over the endpoints
 for i in "${!endpoints[@]}"; do
-    url="http://${PI_HOSTNAME}:${PI_PORT}/api/${i}"
+    url="http://${PI_HOSTNAME}:${PI_PORT}/api/${endpoints[$i]}"
     echo
     echo "Calling ${url} ..."
     curl "$url"
+    echo
 done
 
 echo
