@@ -20,19 +20,21 @@ def _sig_handler(signum, frame):
     STOP = True
 
 
-def sample_sensors(sensor, database):
+def sample_sensors(sensor, database, report_readings):
     """
     Sample the SGP40 sensors, write the results to the database and echo them on the terminal
     """
     sraw, voc_index, voc_label = sensor.read()
-    timestamp = database.insert_sgp_row(sraw, voc_index, voc_label)
-    print(f"{timestamp}  SRAW: {sraw}  VOC Index: {voc_index}   {voc_label}")
+    if report_readings:
+        timestamp = database.insert_sgp_row(sraw, voc_index, voc_label)
+        print(f"{timestamp}  SRAW: {sraw}  VOC Index: {voc_index}   {voc_label}")
 
 
 def main():
     ap = argparse.ArgumentParser(description="SGP40 to SQLite and Console Logger")
     ap.add_argument("--db", default="weather.db", help="SQLite database path")
     ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
+    ap.add_argument("--interval", type=int, default=60, help="Sample reporting interval in seconds")
     ap.add_argument("--bus", type=int, default=0, help="I2C bus number")
     ap.add_argument("--sgp-addr", default="0x10", help="SGP40 I2C address")
     ap.add_argument("--once", action="store_true", help="Take one reading and exit")
@@ -65,31 +67,34 @@ def main():
         sample_sensors(sensor, database)
         return
 
-    # Set up for readings at specified intervals
-    next_t = time.monotonic()
-
     try:
+        report_counter = 0
         global STOP
         while not STOP:
-            try:
-                # Purge old data
-                database.purge()
-
+            
+            try:  
                 # Take the next readings
-                sample_sensors(sensor, database)
+                report_counter += 1
+                report_readings = report_counter == args.interval
+                sample_sensors(sensor, database, report_readings)
+
+                # Reset the counter, if necessary
+                if report_readings:
+                    report_counter = 0
+
             except OSError as ex:
                 ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-                print(f"{ts}  I2C error: {ex}", file=sys.stderr)
+                print(f"{ts}  I2C error: {ex}; retrying in {args.interval}s", file=sys.stderr)
 
-            # Wait for the specified interval
-            next_t += 1.0
-            delay = max(0.0, next_t - time.monotonic())
-            time.sleep(delay)
+            # Wait for 1 second, which is the sampling interval expected by the Sensiron VOC algorithm
+            time.sleep(1)
     
     except KeyboardInterrupt:
         pass
     finally:
+        # Close the bus and purge old data
         bus.close()
+        database.purge()
 
 
 if __name__ == "__main__":
