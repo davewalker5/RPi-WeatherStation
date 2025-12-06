@@ -8,7 +8,15 @@
 
 ## About
 
-__Under Construction__
+The following is a table of supported sensors:
+
+| Measurement | Sensor | Reference |
+| --- | --- | --- |
+| Temperature | BME280 | [Bosch BME280 datasheet](https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf) |
+| Pressure |  BME280 | [Bosch BME280 datasheet](https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf) |
+| Humidity |  BME280 | [Bosch BME280 datasheet](https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf) |
+| Illuminance | VEML7700 | [VEML7700 datasheet](https://www.vishay.com/docs/84286/veml7700.pdf) |
+| Air Quality | SGP40 | [Sensiron SGP40 datasheet](https://sensirion.com/resource/datasheet/sgp40?utm_source=chatgpt.com) |
 
 ## Getting Started
 
@@ -25,6 +33,9 @@ Please see the [Wiki](https://github.com/davewalker5/RPi-WeatherStation/wiki) fo
   - [Designing the VEML7700 Into an Application](https://www.vishay.com/docs/84323/designingveml7700.pdf)
   - [VEML7700 Data Sheet](https://www.vishay.com/docs/84286/veml7700.pdf)
   - [I2C Communication With The VEML7700 Light Sensor](https://forums.raspberrypi.com/viewtopic.php?t=198082)
+- The implementation of the SGP40 wrapper draws on the following references:
+  - [SGP40 Data Sheet](https://www.vishay.com/docs/84286/veml7700.pdf)
+  - [SGP40 VOC Index](https://cdn.sparkfun.com/assets/e/9/3/f/e/GAS_AN_SGP40_VOC_Index_for_Experts_D1.pdf)
 
 ## Feedback
 
