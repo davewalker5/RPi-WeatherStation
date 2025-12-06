@@ -1,5 +1,6 @@
 import time
 from os import environ
+import datetime as dt
 from weather import VEML7700
 from smbus2 import SMBus, i2c_msg
 from i2c import I2CDevice
@@ -25,8 +26,9 @@ def main():
 
     try:
         while True:
+            timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
             als, white, lux = sensor.read()
-            print(f"ALS={als:5d}  WHITE={white:5d}  LUX≈{lux:8.2f}")
+            print(f"{timestamp}  ALS={als:5d}  WHITE={white:5d}  LUX≈{lux:8.2f}")
             time.sleep(1.0)
     finally:
         bus.close()

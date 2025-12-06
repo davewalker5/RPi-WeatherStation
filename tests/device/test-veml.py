@@ -1,5 +1,6 @@
 import time
 from os import environ
+import datetime as dt
 from smbus2 import SMBus
 
 BUS = int(environ["BUS_NUMBER"])
@@ -44,7 +45,8 @@ with SMBus(BUS) as bus:
 
     # 4. Read ALS/WHITE repeatedly
     while True:
+        timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
         als   = read_u16(bus, REG_ALS)
         white = read_u16(bus, REG_WHITE)
-        print(f"ALS={als:5d}  WHITE={white:5d}")
+        print(f"{timestamp}  ALS={als:5d}  WHITE={white:5d}")
         time.sleep(1)

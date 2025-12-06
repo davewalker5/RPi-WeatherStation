@@ -1,7 +1,8 @@
 import time
+from os import environ
+import datetime as dt
 from smbus2 import SMBus, i2c_msg
 from sensirion_gas_index_algorithm.voc_algorithm import VocAlgorithm
-from os import environ
 
 
 def _crc8_sgp40(two_bytes: bytes) -> int:
@@ -87,7 +88,8 @@ def main():
             voc_index = voc_algo.process(sraw)  # 0–500-ish, 100 = “typical”
             label = classify_voc_index(voc_index)
 
-            print(f"SRAW: {sraw:5d} | VOC Index: {voc_index:3d} | {label}")
+            timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
+            print(f"{timestamp}  SRAW: {sraw:5d} | VOC Index: {voc_index:3d} | {label}")
             time.sleep(1)  # algorithm is designed around ~1 Hz updates
 
 
