@@ -80,7 +80,7 @@ class Database:
     veml_integration_time_ms: int = None
     sgp_addr: str = None
 
-    def __init__(self, db_path, retention, bus, bme_address, veml_address, veml_gain, veml_integration_time_ms, sgp_addr):
+    def __init__(self, db_path, retention, bus, bme_address, veml_address, veml_gain, veml_integration_time_ms, sgp_address):
         self.db_path = db_path
         self.retention = retention
         self.bus = bus
@@ -88,7 +88,7 @@ class Database:
         self.veml_address = veml_address
         self.veml_gain = veml_gain
         self.veml_integration_time_ms = veml_integration_time_ms
-        self.sgp_addr = sgp_addr
+        self.sgp_address = sgp_address
         self.last_purged = None
 
     def create_database(self):
