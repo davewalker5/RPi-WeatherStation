@@ -55,7 +55,7 @@ def main():
     sensor = BME280(bus, addr)
 
     # Create the database access wrapper
-    database = Database(args.db, args.retention, args.bus, args.bme_addr, 0, 0, 0)
+    database = Database(args.db, args.retention, args.bus, args.bme_addr, None, None, None, None)
     database.create_database()
 
     # If one-shot has been specified, sample the sensor, display the results and exit

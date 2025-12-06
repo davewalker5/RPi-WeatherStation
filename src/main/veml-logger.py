@@ -60,7 +60,7 @@ def main():
     sensor = VEML7700(i2c_device, args.veml_gain, args.veml_integration_ms)
 
     # Create the database access wrapper
-    database = Database(args.db, args.retention, args.bus, 0, args.veml_addr, args.veml_gain, args.veml_integration_ms)
+    database = Database(args.db, args.retention, args.bus, None, args.veml_addr, args.veml_gain, args.veml_integration_ms, None)
     database.create_database()
 
     # If one-shot has been specified, sample the sensor, display the results and exit

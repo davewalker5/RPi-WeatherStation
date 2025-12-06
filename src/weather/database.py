@@ -37,7 +37,9 @@ CREATE TABLE IF NOT EXISTS SGP40_READINGS (
     Timestamp           TEXT NOT NULL,
     SRAW                INTEGER NOT NULL,
     VOCIndex            INTEGER NOT NULL,
-    Label               TEXT NOT NULL
+    Label               TEXT NOT NULL,
+    Bus                 INTEGER NOT NULL,
+    Address             TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS IX_SGP40_READINGS_TS ON SGP40_READINGS (Timestamp);
 """
@@ -76,8 +78,9 @@ class Database:
     veml_addr: str = None
     veml_gain: float = None
     veml_integration_time_ms: int = None
+    sgp_addr: str = None
 
-    def __init__(self, db_path, retention, bus, bme_address, veml_address, veml_gain, veml_integration_time_ms):
+    def __init__(self, db_path, retention, bus, bme_address, veml_address, veml_gain, veml_integration_time_ms, sgp_addr):
         self.db_path = db_path
         self.retention = retention
         self.bus = bus
@@ -85,6 +88,7 @@ class Database:
         self.veml_address = veml_address
         self.veml_gain = veml_gain
         self.veml_integration_time_ms = veml_integration_time_ms
+        self.sgp_addr = sgp_addr
         self.last_purged = None
 
     def create_database(self):
@@ -135,7 +139,7 @@ class Database:
         timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
-        cur.execute(INSERT_SGP_SQL, (timestamp, sraw, index, label))
+        cur.execute(INSERT_SGP_SQL, (timestamp, sraw, index, label, self.bus, self.sgp_address))
         con.commit()
         con.close()
         return timestamp

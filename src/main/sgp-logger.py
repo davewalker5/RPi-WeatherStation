@@ -22,7 +22,7 @@ def _sig_handler(signum, frame):
 
 def sample_sensors(sensor, database):
     """
-    Sample the VEML770 sensors, write the results to the database and echo them on the terminal
+    Sample the SGP40 sensors, write the results to the database and echo them on the terminal
     """
     sraw, index, label = sensor.read()
     timestamp = database.insert_sgp_row(sraw, index, label)
@@ -35,7 +35,7 @@ def main():
     ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
     ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
     ap.add_argument("--bus", type=int, default=0, help="I2C bus number")
-    ap.add_argument("--sgp-addr", default="0x10", help="VEML7700 I2C address")
+    ap.add_argument("--sgp-addr", default="0x10", help="SGP40 I2C address")
     ap.add_argument("--once", action="store_true", help="Take one reading and exit")
     args = ap.parse_args()
 
@@ -58,7 +58,7 @@ def main():
     sensor = SGP40(i2c_device, VocAlgorithm())
 
     # Create the database access wrapper
-    database = Database(args.db, args.retention, args.bus, 0, args.veml_addr, args.veml_gain, args.veml_integration_ms)
+    database = Database(args.db, args.retention, args.bus, None, None, None, None, args.sgp_addr)
     database.create_database()
 
     # If one-shot has been specified, sample the sensor, display the results and exit
