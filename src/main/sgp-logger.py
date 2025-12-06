@@ -26,6 +26,10 @@ def sample_sensors(sensor, database, report_readings):
     """
     sraw, voc_index, voc_label = sensor.read()
     if report_readings:
+        # Purge old data
+        database.purge()
+
+        # Store and report the reading
         timestamp = database.insert_sgp_row(sraw, voc_index, voc_label)
         print(f"{timestamp}  SRAW: {sraw}  VOC Index: {voc_index}   {voc_label}")
 
@@ -94,7 +98,6 @@ def main():
     finally:
         # Close the bus and purge old data
         bus.close()
-        database.purge()
 
 
 if __name__ == "__main__":

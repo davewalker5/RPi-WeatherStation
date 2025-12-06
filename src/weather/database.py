@@ -51,6 +51,9 @@ DELETE FROM BME280_READINGS WHERE Timestamp <= ?;
 """,
 """
 DELETE FROM VEML7700_READINGS WHERE Timestamp <= ?;
+""",
+"""
+DELETE FROM SGP40_READINGS WHERE Timestamp <= ?;
 """
 ]
 
