@@ -6,6 +6,8 @@ PROJECT_FOLDER=$( cd "$( dirname "$SCRIPT_PATH" )/.." && pwd )
 
 # Set the environment
 export PYTHONPATH="$PROJECT_FOLDER/src:$PROJECT_FOLDER/tests"
+export PI_HOSTNAME=weatherpi
+export PI_PORT=8080
 export SAMPLE_INTERVAL=60.0
 export DISPLAY_INTERVAL=5.0
 export BUS_NUMBER=1

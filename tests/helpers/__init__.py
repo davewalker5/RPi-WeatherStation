@@ -3,6 +3,7 @@ from .bme280_trimming_parameters import BME280_TRIMMING_PARAMETERS
 from .veml7700_inversion_helper import VEML7700InversionHelper
 from .mock_smbus import MockSMBus
 from .mock_i2c_msg import MockI2CMsg
+from .mock_voc_algorithm import MockVOCAlgorithm
 
 
 __all__ = [
@@ -10,5 +11,6 @@ __all__ = [
     "BME280_TRIMMING_PARAMETERS",
     "VEML7700InversionHelper",
     "MockSMBus",
-    "MockI2CMsg"
+    "MockI2CMsg",
+    "MockVOCAlgorithm"
 ]

@@ -19,7 +19,7 @@ def main():
         print(f"{name} : {value}")
     print()
 
-    bus = MockSMBus(BME280_TRIMMING_PARAMETERS, None)
+    bus = MockSMBus(BME280_TRIMMING_PARAMETERS, None, None)
     helper = BME280InversionHelper(bus, None)
     fixture = helper.make_test_fixture(args.temperature, args.pressure, args.humidity, 100, 0.01)
 
