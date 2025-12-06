@@ -30,6 +30,16 @@ CREATE TABLE IF NOT EXISTS VEML7700_READINGS (
     IsSaturated         INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS IX_VEML7700_READINGS_TS ON VEML7700_READINGS (Timestamp);
+""",
+"""
+CREATE TABLE IF NOT EXISTS SGP40_READINGS (
+    Id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    Timestamp           TEXT NOT NULL,
+    SRAW                INTEGER NOT NULL,
+    VOCIndex            INTEGER NOT NULL,
+    Label               TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS IX_SGP40_READINGS_TS ON SGP40_READINGS (Timestamp);
 """
 ]
 
@@ -50,6 +60,11 @@ VALUES (?, ?, ?, ?, ?, ?);
 INSERT_VEML_SQL = """
 INSERT INTO VEML7700_READINGS (Timestamp, ALS, White, Illuminance, IsSaturated, Gain, IntegrationTime, Bus, Address)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+"""
+
+INSERT_SGP_SQL = """
+INSERT INTO SGP40_READINGS (Timestamp, SRAW, Index, Label)
+VALUES (?, ?, ?, ?);
 """
 
 
@@ -112,6 +127,15 @@ class Database:
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
         cur.execute(INSERT_VEML_SQL, (timestamp, als, white, lux, is_saturated, self.veml_gain, self.veml_integration_time_ms, self.bus, self.veml_address))
+        con.commit()
+        con.close()
+        return timestamp
+
+    def insert_sgp_row(self, sraw, index, label):
+        timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
+        con = sqlite3.connect(self.db_path)
+        cur = con.cursor()
+        cur.execute(INSERT_SGP_SQL, (timestamp, sraw, index, label))
         con.commit()
         con.close()
         return timestamp
