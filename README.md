@@ -8,7 +8,9 @@
 
 ## About
 
-The following is a table of supported sensors:
+The RPi-WeatherStation is a simple home weather station based around a [Waveshare Raspberry Pi Zero WH](https://www.waveshare.com/wiki/Raspberry_Pi_Zero).
+
+The following is a table of the current supported sensors:
 
 | Measurement | Sensor | Reference |
 | --- | --- | --- |
