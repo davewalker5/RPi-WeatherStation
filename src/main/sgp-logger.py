@@ -68,7 +68,7 @@ def main():
         return
 
     try:
-        report_counter = 0
+        report_counter = args.interval - 1
         global STOP
         while not STOP:
             
