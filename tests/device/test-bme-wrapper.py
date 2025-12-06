@@ -6,7 +6,7 @@ from smbus2 import SMBus
 
 def main():
     bus = SMBus(int(environ["BUS_NUMBER"]))
-    addr = int(args.veml_addr, 16)
+    addr = int(environ["BME_ADDR"], 16)
     sensor = BME280(bus, addr)
 
     try:
