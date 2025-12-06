@@ -1,5 +1,6 @@
 import time
 from os import environ
+import datetime as dt
 from weather import SGP40
 from smbus2 import SMBus, i2c_msg
 from i2c import I2CDevice
@@ -15,7 +16,8 @@ def main():
     try:
         while True:
             result = sensor.read()
-            print(f"SRAW={result['sraw']}  Index={result['voc_index']}  Label{result['voc_label']}")
+            timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
+            print(f"{timestamp}  SRAW: {result['sraw']}  VOC Index: {result['voc_index']}   {result['voc_label']}")
             time.sleep(1.0)
     finally:
         bus.close()

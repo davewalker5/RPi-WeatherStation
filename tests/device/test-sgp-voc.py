@@ -89,7 +89,7 @@ def main():
             label = classify_voc_index(voc_index)
 
             timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-            print(f"{timestamp}  SRAW: {sraw:5d} | VOC Index: {voc_index:3d} | {label}")
+            print(f"{timestamp}  SRAW: {sraw:5d}  VOC Index: {voc_index:3d}  {label}")
             time.sleep(1)  # algorithm is designed around ~1 Hz updates
 
 
