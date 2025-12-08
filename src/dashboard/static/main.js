@@ -6,9 +6,6 @@ async function fetchCurrent() {
 
   try {
     const res = await fetch("/api/current");
-    if (!res.ok) {
-      throw new Error("HTTP " + res.status);
-    }
     const data = await res.json();
 
     if (data.error) {
@@ -29,13 +26,11 @@ async function fetchCurrent() {
     const now = new Date();
     updatedEl.textContent = "Last updated: " + now.toLocaleTimeString();
   } catch (err) {
-    console.error(err);
-    errorEl.textContent = "Failed to fetch data.";
   }
 }
 
 // Fetch immediately on load
 fetchCurrent();
 
-// Then poll every 10 seconds (adjust to taste)
-setInterval(fetchCurrent, 10000);
+// Then poll every 60 seconds
+setInterval(fetchCurrent, 60000);

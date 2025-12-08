@@ -2,9 +2,13 @@ import os
 from flask import Flask, render_template, jsonify
 import requests
 from dotenv import load_dotenv
+from pathlib import Path
 
-# Load .env into environment variables
-load_dotenv()
+# Resolve the directory where this file lives, construct the explicit path to the
+# environment file and load the variables it contains
+BASE_DIR = Path(__file__).resolve().parent
+ENV_PATH = BASE_DIR / ".env"
+load_dotenv(dotenv_path=ENV_PATH)
 
 app = Flask(__name__)
 
@@ -19,7 +23,6 @@ def current_weather():
     WEATHER_HOST = os.getenv("WEATHER_HOST")
     WEATHER_PORT = os.getenv("WEATHER_PORT")
     WEATHER_API_BASE_URL = f"{WEATHER_SCHEME}://{WEATHER_HOST}:{WEATHER_PORT}/api"
-    print(WEATHER_API_BASE_URL)
 
     try:
         # Get the latest BME280 readings
@@ -45,7 +48,7 @@ def current_weather():
         }
 
     except Exception as e:
-        return jsonify({"error": e}), 502
+        return jsonify({"error": str(e)}), 502
 
     return jsonify(data)
 
