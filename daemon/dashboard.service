@@ -1,0 +1,17 @@
+[Unit]
+Description=Flask Weather Dashboard
+After=network.target
+
+[Service]
+User=pi
+Group=pi
+WorkingDirectory=/opt/weather/src/dashboard
+Environment="PATH=/opt/weather/venv/bin"
+ExecStart=/opt/weather/venv/bin/gunicorn -b 0.0.0.0:8096 app:app
+
+# Optional but recommended:
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

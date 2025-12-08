@@ -7,7 +7,7 @@ from pathlib import Path
 # Resolve the directory where this file lives, construct the explicit path to the
 # environment file and load the variables it contains
 BASE_DIR = Path(__file__).resolve().parent
-ENV_PATH = BASE_DIR / ".env"
+ENV_PATH = BASE_DIR / "dashboard.env"
 load_dotenv(dotenv_path=ENV_PATH)
 
 app = Flask(__name__)
