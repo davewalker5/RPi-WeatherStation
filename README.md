@@ -12,6 +12,8 @@ The RPi-WeatherStation is a simple home weather station based around a [Waveshar
 
 It provides command-line logging scripts for periodic capture of sensor readings and storage of those readings in a SQLite database.
 
+It also provides a simple dashboard to present the latest readings in a web browser.
+
 It also implements a simple web service that can be run either as a command-lin script or installed as a systemd daemon. The web service periodically scans all the sensors, stores the data in a SQLite database and exposes endpoints to query the latest readings.
 
 The following is a table of the current supported sensors:
