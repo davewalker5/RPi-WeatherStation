@@ -23,20 +23,21 @@ def current_weather():
     WEATHER_HOST = os.getenv("WEATHER_HOST")
     WEATHER_PORT = os.getenv("WEATHER_PORT")
     WEATHER_API_BASE_URL = f"{WEATHER_SCHEME}://{WEATHER_HOST}:{WEATHER_PORT}/api"
+    TIMEOUT = int(os.getenv("TIMEOUT"))
 
     try:
         # Get the latest BME280 readings
-        resp = requests.get(f"{WEATHER_API_BASE_URL}/bme", timeout=3)
+        resp = requests.get(f"{WEATHER_API_BASE_URL}/bme", timeout=TIMEOUT)
         resp.raise_for_status()
         bme_readings = resp.json()
 
         # Get the latest VEML7700 readings
-        resp = requests.get(f"{WEATHER_API_BASE_URL}/veml", timeout=3)
+        resp = requests.get(f"{WEATHER_API_BASE_URL}/veml", timeout=TIMEOUT)
         resp.raise_for_status()
         veml_readings = resp.json()
 
         # Get the latest SGP40 readings
-        resp = requests.get(f"{WEATHER_API_BASE_URL}/sgp", timeout=3)
+        resp = requests.get(f"{WEATHER_API_BASE_URL}/sgp", timeout=TIMEOUT)
         resp.raise_for_status()
         sgp_readings = resp.json()
 

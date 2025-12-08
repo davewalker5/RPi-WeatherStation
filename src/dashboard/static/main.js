@@ -1,3 +1,9 @@
+function renderRating(rating, max = 5) {
+  const full = "★".repeat(rating);
+  const empty = "☆".repeat(max - rating);
+  return full + empty;
+}
+
 async function fetchCurrent() {
   const errorEl = document.getElementById("error");
   const updatedEl = document.getElementById("updated");
@@ -21,8 +27,9 @@ async function fetchCurrent() {
     document.getElementById("pressure").textContent = data.bme.pressure_hpa;
     document.getElementById("lux").textContent = data.veml.illuminance_lux;
     document.getElementById("voc_label").textContent = data.sgp.voc_label;
-    document.getElementById("voc_rating").textContent = data.sgp.voc_rating;
+    document.getElementById("voc_rating").textContent = renderRating(data.sgp.voc_rating.length);
 
+    // Update the last refresh date
     const now = new Date();
     updatedEl.textContent = "Last updated: " + now.toLocaleTimeString();
   } catch (err) {
