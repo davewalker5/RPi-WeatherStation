@@ -11,17 +11,17 @@ async function fetchCurrent() {
   errorEl.textContent = "";
 
   try {
+    // Get the latest sensor readings
     const res = await fetch("/api/current");
     const data = await res.json();
 
+    // If there's an error, report it
     if (data.error) {
       errorEl.textContent = data.error;
       return;
     }
 
-    console.log(data);
-
-    // Adjust these properties based on your actual JSON structure:
+    // Update the readings
     document.getElementById("temperature").textContent = data.bme.temperature_c;
     document.getElementById("humidity").textContent = data.bme.humidity_pct;
     document.getElementById("pressure").textContent = data.bme.pressure_hpa;
