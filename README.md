@@ -8,6 +8,8 @@
 
 ## About
 
+<img src="https://github.com/davewalker5/RPi-WeatherStation/blob/main/diagrams/dashboard.png" width="600" alt="Raspberry Pi Weather Station"/>
+
 The RPi-WeatherStation is a simple home weather station based around a [Waveshare Raspberry Pi Zero WH](https://www.waveshare.com/wiki/Raspberry_Pi_Zero).
 
 It provides command-line logging scripts for periodic capture of sensor readings and storage of those readings in a SQLite database along with a simple dashboard to present the latest readings in a web browser.
