@@ -18,7 +18,7 @@ queries=(
 for i in "${!queries[@]}"; do
     query_file="$PROJECT_FOLDER/sql/${queries[$i]}.sql"
     echo
-    sqlite2 "$DB_PATH" "$query_file"
+    sqlite3 "$DB_PATH" "$query_file"
     echo
 done
 
