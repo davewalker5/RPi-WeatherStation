@@ -57,7 +57,7 @@ def main():
     # Create the wrapper to query the VEML770
     veml_addr = int(args.veml_addr, 16)
     i2c_device = I2CDevice(bus, veml_addr, i2c_msg)
-    veml7700 = VEML7700(i2c_device, args.veml_gain, args.veml_integration_ms, False) if i2c_device_present(bus, veml_addr, False) else None
+    veml7700 = VEML7700(i2c_device, args.veml_gain, args.veml_integration_ms) if i2c_device_present(bus, veml_addr, False) else None
 
     # Create the wrapper to query the SGP40
     sgp_addr = int(args.sgp_addr, 16)
