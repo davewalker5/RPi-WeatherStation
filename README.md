@@ -44,6 +44,7 @@ Please see the [Wiki](https://github.com/davewalker5/RPi-WeatherStation/wiki) fo
 - The implementation of the SGP40 wrapper draws on the following references:
   - [SGP40 Data Sheet](https://www.vishay.com/docs/84286/veml7700.pdf)
   - [SGP40 VOC Index](https://cdn.sparkfun.com/assets/e/9/3/f/e/GAS_AN_SGP40_VOC_Index_for_Experts_D1.pdf)
+- Includes an I2C LCD driver adapted from community examples
 
 ## Feedback
 
