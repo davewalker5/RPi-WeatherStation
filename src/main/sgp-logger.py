@@ -61,7 +61,7 @@ def main():
     addr = int(args.sgp_addr, 16)
     if not i2c_device_present(bus, addr):
         ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-        print(f"{ts}  I2C error: No device found at address {args.bme_addr}", file=sys.stderr)
+        print(f"{ts}  I2C error: No device found at address {args.sgp_addr}", file=sys.stderr)
         bus.close()
         return
     i2c_device = I2CDevice(bus, addr, i2c_msg)
