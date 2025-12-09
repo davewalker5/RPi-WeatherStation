@@ -1,58 +1,148 @@
 from time import sleep
 
-# PCF8574 pin mapping (typical for most 1602 I2C backpacks)
-LCD_CHR = 1  # Mode - Sending data
-LCD_CMD = 0  # Mode - Sending command
+LCD_CHR = 1  # RS bit = 1 for data
+LCD_CMD = 0  # RS bit = 0 for command
 
-LCD_BACKLIGHT = 0x08  # On
-# LCD_BACKLIGHT = 0x00  # Off
+ENABLE = 0b00000100   # E bit
 
-ENABLE = 0b00000100  # Enable bit
+LCD_LINE_1 = 0x80     # DDRAM addr for line 1
+LCD_LINE_2 = 0xC0     # DDRAM addr for line 2
 
-LCD_LINE_1 = 0x80  # First line
-LCD_LINE_2 = 0xC0  # Second line
+E_PULSE = 0.0005      # 500 µs
+E_DELAY = 0.0005
+
 
 class I2CLCD:
-    def __init__(self, bus, addr):
+    def __init__(self, bus, addr, backlight=True, max_retries=3):
+        """
+        bus: Mock or real SMBus()
+        addr: I2C address of the LCD
+        backlight: Initial backlight state
+        max_retries: Retries on I2C error before reinitialising the display
+        """
         self.bus = bus
         self.addr = addr
-        self._init_lcd()
+        self.backlight = backlight
+        self.max_retries = max_retries
 
-    def _init_lcd(self):
-        # Initialise display
-        self._lcd_byte(0x33, LCD_CMD)
-        self._lcd_byte(0x32, LCD_CMD)
-        self._lcd_byte(0x06, LCD_CMD)
-        self._lcd_byte(0x0C, LCD_CMD)
-        self._lcd_byte(0x28, LCD_CMD)
-        self._lcd_byte(0x01, LCD_CMD)
-        sleep(0.005)
+        self._init_display()
+
+    # -------------------------------
+    # Backlight control
+    # -------------------------------
+
+    def backlight_on(self):
+        self.backlight = True
+        self._refresh_backlight()
+
+    def backlight_off(self):
+        self.backlight = False
+        self._refresh_backlight()
+
+    def toggle_backlight(self):
+        self.backlight = not self.backlight
+        self._refresh_backlight()
+
+    def _bl_bit(self):
+        return 0x08 if self.backlight else 0x00
+
+    def _refresh_backlight(self):
+        """
+        Force a write so the LCD output updates immediately
+        """
+        try:
+            self.bus.write_byte(self.addr, self._bl_bit())
+        except OSError:
+            pass
+
+    # -------------------------------
+    # Low level I2C helpers
+    # -------------------------------
 
     def _lcd_strobe(self, data):
+        """
+        Toggle the enable bit (E) to prompt the LCD display to read the data lines
+        and update the display
+        """
         self.bus.write_byte(self.addr, data | ENABLE)
-        sleep(0.0005)
+        sleep(E_PULSE)
         self.bus.write_byte(self.addr, data & ~ENABLE)
-        sleep(0.0001)
+        sleep(E_DELAY)
 
     def _lcd_byte(self, bits, mode):
-        high = mode | (bits & 0xF0) | LCD_BACKLIGHT
-        low = mode | ((bits << 4) & 0xF0) | LCD_BACKLIGHT
+        """
+        Send a single byte to the LCD in 4-bit mode (two nibbles). The LCD controller is 8-bit but
+        I2C only provides 4 data lines to the LCD. So every character or command byte must be split
+        as follows:
 
+        Original byte:  0b ABCD EFGH
+        High nibble:    0b ABCD ----
+        Low nibble:     0b EFGH ----
+
+        Mode simply indicates a command, LCD_CMD (0), or data, LCD_CHR (1)
+        """
+        # Determine the backlight status
+        bl = self._bl_bit()
+
+        # Split the byte into high and low nibbles
+        high = mode | (bits & 0xF0) | bl
+        low = mode | ((bits << 4) & 0xF0) | bl
+
+        # Write the high nibble
         self.bus.write_byte(self.addr, high)
         self._lcd_strobe(high)
 
+        # Write the low nibble
         self.bus.write_byte(self.addr, low)
         self._lcd_strobe(low)
 
+    # -------------------------------
+    # LCD initialisation & commands
+    # -------------------------------
+
+    def _init_display(self):
+        """
+        Initialise the LCD display
+        """
+        sleep(0.05)
+        self._lcd_byte(0x33, LCD_CMD)
+        self._lcd_byte(0x32, LCD_CMD)
+        self._lcd_byte(0x28, LCD_CMD)
+        self._lcd_byte(0x0C, LCD_CMD)
+        self._lcd_byte(0x06, LCD_CMD)
+        self._lcd_byte(0x01, LCD_CMD)
+        sleep(0.002)
+
     def clear(self):
+        """
+        Clear the LCD display
+        """
         self._lcd_byte(0x01, LCD_CMD)
         sleep(0.002)
 
     def write(self, text, line=1):
-        if line == 1:
-            self._lcd_byte(LCD_LINE_1, LCD_CMD)
-        else:
-            self._lcd_byte(LCD_LINE_2, LCD_CMD)
+        """
+        Write text to the specified line of the display
+        Return the number of attempts at writing and a success code
+        """
+        for i in range(self.max_retries):
+            try:
+                if line == 1:
+                    self._lcd_byte(LCD_LINE_1, LCD_CMD)
+                else:
+                    self._lcd_byte(LCD_LINE_2, LCD_CMD)
 
-        for char in text.ljust(16):  # pad to 16 chars
-            self._lcd_byte(ord(char), LCD_CHR)
+                for char in text.ljust(16)[:16]:
+                    self._lcd_byte(ord(char), LCD_CHR)
+
+                return True, i + 1
+            except OSError:
+                self._init_display()
+
+        return False, i + 1
+
+    def reset(self):
+        """
+        Reinitialise the display
+        """
+        self._init_display()
