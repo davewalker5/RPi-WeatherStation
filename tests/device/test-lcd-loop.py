@@ -12,8 +12,8 @@ lcd = I2CLCD(bus, addr)
 i = 0
 while True:
     success, attempts = lcd.write(f"Count: {i}", line=1)
-    print(f"Line 1: Status {success} after {attempts} attempts")
+    print(f"Line 1: Status {success} after {attempts} attempt(s)")
     success, attempts = lcd.write("Pi Weather Stn", line=2)
-    print(f"Line 2: Status {success} after {attempts} attempts")
+    print(f"Line 2: Status {success} after {attempts} attempt(s)")
     i += 1
     sleep(1)

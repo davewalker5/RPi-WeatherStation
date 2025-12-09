@@ -111,11 +111,11 @@ class I2CLCD:
                 for char in text.ljust(16)[:16]:
                     self._lcd_byte(ord(char), LCD_CHR)
 
-                return True, i
+                return True, i + 1
             except OSError:
                 self._init_display()
 
-        return False, i
+        return False, i + 1
 
     def reset(self):
         self._init_display()
