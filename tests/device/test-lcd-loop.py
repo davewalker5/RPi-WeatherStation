@@ -1,7 +1,7 @@
 import smbus
 from time import sleep
 from os import environ
-from i2c_lcd import I2CLCD
+from i2c import I2CLCD
 
 bus_num = int(environ["BUS_NUMBER"])
 addr = int(environ["LCD_ADDR"], 16)
