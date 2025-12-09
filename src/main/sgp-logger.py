@@ -59,7 +59,7 @@ def main():
     # Create the wrapper to query the SGP40
     bus = SMBus(args.bus)
     addr = int(args.sgp_addr, 16)
-    if not i2c_device_present(bus, addr):
+    if not i2c_device_present(bus, addr, True):
         ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
         print(f"{ts}  I2C error: No device found at address {args.sgp_addr}", file=sys.stderr)
         bus.close()

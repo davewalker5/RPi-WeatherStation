@@ -52,17 +52,17 @@ def main():
     # Create the wrapper to query the BME280
     bus = SMBus(args.bus)
     bme_addr = int(args.bme_addr, 16)
-    bme280 = BME280(bus, bme_addr) if i2c_device_present(bus, bme_addr) else None
+    bme280 = BME280(bus, bme_addr) if i2c_device_present(bus, bme_addr, False) else None
 
     # Create the wrapper to query the VEML770
     veml_addr = int(args.veml_addr, 16)
     i2c_device = I2CDevice(bus, veml_addr, i2c_msg)
-    veml7700 = VEML7700(i2c_device, args.veml_gain, args.veml_integration_ms) if i2c_device_present(bus, veml_addr) else None
+    veml7700 = VEML7700(i2c_device, args.veml_gain, args.veml_integration_ms, False) if i2c_device_present(bus, veml_addr) else None
 
     # Create the wrapper to query the SGP40
     sgp_addr = int(args.sgp_addr, 16)
     i2c_device = I2CDevice(bus, sgp_addr, i2c_msg)
-    sgp40 = SGP40(i2c_device, VocAlgorithm()) if i2c_device_present(bus, sgp_addr) else None
+    sgp40 = SGP40(i2c_device, VocAlgorithm()) if i2c_device_present(bus, sgp_addr, True) else None
 
     # Create the database access wrapper
     database = Database(args.db, args.retention, args.bus, args.bme_addr, args.veml_addr, args.veml_gain, args.veml_integration_ms, args.sgp_addr)
@@ -75,7 +75,7 @@ def main():
     # Create and start the LCD display handler
     if not args.no_lcd:
         lcd_addr = int(args.lcd_addr, 16)
-        if i2c_device_present(bus, lcd_addr):
+        if i2c_device_present(bus, lcd_addr, False):
             lcd = I2CLCD(bus, lcd_addr)
             display = LCDDisplay(lcd, sampler, args.display_interval)
             display.start()
