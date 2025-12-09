@@ -13,7 +13,7 @@ E_DELAY = 0.0005
 
 
 class I2CLCD:
-    def __init__(self, bus, addr, backlight=True, max_retries=5):
+    def __init__(self, bus, addr, backlight=True, max_retries=3):
         """
         bus: Mock or real SMBus()
         addr: I2C address of the LCD
@@ -48,7 +48,7 @@ class I2CLCD:
 
     def _refresh_backlight(self):
         """
-        Force a write so the PCF8574 output updates immediately.
+        Force a write so the LCD output updates immediately
         """
         try:
             self.bus.write_byte(self.addr, self._bl_bit())
@@ -60,9 +60,9 @@ class I2CLCD:
     # -------------------------------
 
     def _lcd_strobe(self, data):
-        self.bus.write_byte(data | ENABLE)
+        self.bus.write_byte(self.addr, data | ENABLE)
         sleep(E_PULSE)
-        self.bus.write_byte(data & ~ENABLE)
+        self.bus.write_byte(self.addr, data & ~ENABLE)
         sleep(E_DELAY)
 
     def _lcd_byte(self, bits, mode):
@@ -71,10 +71,10 @@ class I2CLCD:
         high = mode | (bits & 0xF0) | bl
         low = mode | ((bits << 4) & 0xF0) | bl
 
-        self.bus.write_byte(high)
+        self.bus.write_byte(self.addr, high)
         self._lcd_strobe(high)
 
-        self.bus.write_byte(low)
+        self.bus.write_byte(self.addr, low)
         self._lcd_strobe(low)
 
     # -------------------------------
@@ -83,6 +83,7 @@ class I2CLCD:
 
     def _init_display(self):
         sleep(0.05)
+
         self._lcd_byte(0x33, LCD_CMD)
         self._lcd_byte(0x32, LCD_CMD)
         self._lcd_byte(0x28, LCD_CMD)
