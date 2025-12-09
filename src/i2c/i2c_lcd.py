@@ -60,20 +60,39 @@ class I2CLCD:
     # -------------------------------
 
     def _lcd_strobe(self, data):
+        """
+        Toggle the enable bit (E) to prompt the LCD display to read the data lines
+        and update the display
+        """
         self.bus.write_byte(self.addr, data | ENABLE)
         sleep(E_PULSE)
         self.bus.write_byte(self.addr, data & ~ENABLE)
         sleep(E_DELAY)
 
     def _lcd_byte(self, bits, mode):
+        """
+        Send a single byte to the LCD in 4-bit mode (two nibbles). The LCD controller is 8-bit but
+        I2C only provides 4 data lines to the LCD. So every character or command byte must be split
+        as follows:
+
+        Original byte:  0b ABCD EFGH
+        High nibble:    0b ABCD ----
+        Low nibble:     0b EFGH ----
+
+        Mode simply indicates a command, LCD_CMD (0), or data, LCD_CHR (1)
+        """
+        # Determine the backlight status
         bl = self._bl_bit()
 
+        # Split the byte into high and low nibbles
         high = mode | (bits & 0xF0) | bl
         low = mode | ((bits << 4) & 0xF0) | bl
 
+        # Write the high nibble
         self.bus.write_byte(self.addr, high)
         self._lcd_strobe(high)
 
+        # Write the low nibble
         self.bus.write_byte(self.addr, low)
         self._lcd_strobe(low)
 
@@ -82,8 +101,10 @@ class I2CLCD:
     # -------------------------------
 
     def _init_display(self):
+        """
+        Initialise the LCD display
+        """
         sleep(0.05)
-
         self._lcd_byte(0x33, LCD_CMD)
         self._lcd_byte(0x32, LCD_CMD)
         self._lcd_byte(0x28, LCD_CMD)
@@ -93,6 +114,9 @@ class I2CLCD:
         sleep(0.002)
 
     def clear(self):
+        """
+        Clear the LCD display
+        """
         self._lcd_byte(0x01, LCD_CMD)
         sleep(0.002)
 
@@ -118,4 +142,7 @@ class I2CLCD:
         return False, i + 1
 
     def reset(self):
+        """
+        Reinitialise the display
+        """
         self._init_display()
