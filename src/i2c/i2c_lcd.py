@@ -60,9 +60,9 @@ class I2CLCD:
     # -------------------------------
 
     def _lcd_strobe(self, data):
-        self.self.bus.write_byte(data | ENABLE)
+        self.bus.write_byte(data | ENABLE)
         sleep(E_PULSE)
-        self.self.bus.write_byte(data & ~ENABLE)
+        self.bus.write_byte(data & ~ENABLE)
         sleep(E_DELAY)
 
     def _lcd_byte(self, bits, mode):
@@ -71,10 +71,10 @@ class I2CLCD:
         high = mode | (bits & 0xF0) | bl
         low = mode | ((bits << 4) & 0xF0) | bl
 
-        self.self.bus.write_byte(high)
+        self.bus.write_byte(high)
         self._lcd_strobe(high)
 
-        self.self.bus.write_byte(low)
+        self.bus.write_byte(low)
         self._lcd_strobe(low)
 
     # -------------------------------
