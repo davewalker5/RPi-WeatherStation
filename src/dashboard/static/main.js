@@ -22,17 +22,28 @@ async function fetchCurrent() {
     }
 
     // Update the readings
-    document.getElementById("temperature").textContent = data.bme.temperature_c;
-    document.getElementById("humidity").textContent = data.bme.humidity_pct;
-    document.getElementById("pressure").textContent = data.bme.pressure_hpa;
-    document.getElementById("lux").textContent = data.veml.illuminance_lux;
-    document.getElementById("voc_label").textContent = data.sgp.voc_label;
-    document.getElementById("voc_rating").textContent = renderRating(data.sgp.voc_rating.length);
+    if (data.bme != null) {
+      document.getElementById("temperature").textContent = data.bme.temperature_c;
+      document.getElementById("humidity").textContent = data.bme.humidity_pct;
+      document.getElementById("pressure").textContent = data.bme.pressure_hpa;
+    }
+
+    if (data.veml != null) {
+      document.getElementById("lux").textContent = data.veml.illuminance_lux;
+    }
+
+    if (data.sgp != null) {
+      document.getElementById("voc_label").textContent = data.sgp.voc_label;
+      document.getElementById("voc_rating").textContent = renderRating(data.sgp.voc_rating.length);
+    } else {
+      document.getElementById("voc_rating").textContent = renderRating(0);
+    }
 
     // Update the last refresh date
     const now = new Date();
     updatedEl.textContent = "Last updated: " + now.toLocaleTimeString();
   } catch (err) {
+      errorEl.textContent = err;
   }
 }
 
