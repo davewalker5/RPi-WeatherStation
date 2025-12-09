@@ -5,7 +5,7 @@ import sys
 import os
 import datetime as dt
 from weather import SGP40, Database
-from i2c import I2CDevice
+from i2c import I2CDevice, i2c_device_present
 from smbus2 import SMBus, i2c_msg
 from sensirion_gas_index_algorithm.voc_algorithm import VocAlgorithm
 
@@ -59,6 +59,11 @@ def main():
     # Create the wrapper to query the SGP40
     bus = SMBus(args.bus)
     addr = int(args.sgp_addr, 16)
+    if not i2c_device_present(bus, addr):
+        ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
+        print(f"{ts}  I2C error: No device found at address {args.bme_addr}", file=sys.stderr)
+        bus.close()
+        return
     i2c_device = I2CDevice(bus, addr, i2c_msg)
     sensor = SGP40(i2c_device, VocAlgorithm())
 

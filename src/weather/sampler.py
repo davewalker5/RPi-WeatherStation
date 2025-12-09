@@ -124,16 +124,23 @@ class Sampler(threading.Thread):
                     self.database.purge()
 
                     # Take the next set of BME280 readings and cache them as the latest readings
-                    timestamp, temperature, pressure, humidity = self._sample_bme_sensors()
-                    self._set_latest_bme(timestamp, temperature, pressure, humidity)
+                    if self.bme280:
+                        timestamp, temperature, pressure, humidity = self._sample_bme_sensors()
+                        self._set_latest_bme(timestamp, temperature, pressure, humidity)
 
                     # Take the next set of VEML7700 readings and cache them as the latest readings
-                    timestamp, als, white, lux, is_saturated = self._sample_veml_sensors()
-                    self._set_latest_veml(timestamp, als, white, lux, is_saturated)
+                    if self.veml7700:
+                        timestamp, als, white, lux, is_saturated = self._sample_veml_sensors()
+                        self._set_latest_veml(timestamp, als, white, lux, is_saturated)
+
+                # Get the latest BME280 reading and extract the humidity and temperature for SGP40
+                # VOC index compensation
+                humidity = self.latest_bme["humidity_pct"] if self.latest_bme else 50.0
+                temperature = self.latest_bme["temperature_c"] if self.latest_bme else 25.0
 
                 # Sample the SGP40 sensors, passing in the latest values from the BM280 for humidity
                 # and temperature compensation 
-                timestamp, sraw, voc_index, voc_label, voc_rating = self._sample_sgp_sensors(self.latest_bme["humidity_pct"], self.latest_bme["temperature_c"], capture_readings)
+                timestamp, sraw, voc_index, voc_label, voc_rating = self._sample_sgp_sensors(humidity, temperature, capture_readings)
                 self._set_latest_sgp(timestamp, sraw, voc_index, voc_label, voc_rating)
 
             except Exception as ex:

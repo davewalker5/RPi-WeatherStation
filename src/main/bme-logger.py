@@ -5,6 +5,7 @@ import sys
 import os
 import datetime as dt
 from weather import BME280, Database
+from i2c import i2c_device_present
 from smbus2 import SMBus
 
 
@@ -52,6 +53,11 @@ def main():
     # Create the wrapper to query the BME280
     bus = SMBus(args.bus)
     addr = int(args.bme_addr, 16)
+    if not i2c_device_present(bus, addr):
+        ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
+        print(f"{ts}  I2C error: No device found at address {args.bme_addr}", file=sys.stderr)
+        bus.close()
+        return
     sensor = BME280(bus, addr)
 
     # Create the database access wrapper
