@@ -97,7 +97,11 @@ class I2CLCD:
         sleep(0.002)
 
     def write(self, text, line=1):
-        for _ in range(self.max_retries):
+        """
+        Write text to the specified line of the display
+        Return the number of attempts at writing and a success code
+        """
+        for i in range(self.max_retries):
             try:
                 if line == 1:
                     self._lcd_byte(LCD_LINE_1, LCD_CMD)
@@ -106,8 +110,12 @@ class I2CLCD:
 
                 for char in text.ljust(16)[:16]:
                     self._lcd_byte(ord(char), LCD_CHR)
+
+                return True, i
             except OSError:
                 self._init_display()
+
+        return False, i
 
     def reset(self):
         self._init_display()
