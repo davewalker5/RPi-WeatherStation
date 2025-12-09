@@ -59,17 +59,10 @@ class I2CLCD:
     # Low level I2C helpers
     # -------------------------------
 
-    def _safe_write(self, value):
-        for _ in range(self.max_retries):
-            try:
-                self.bus.write_byte(self.addr, value)
-            except OSError:
-                self._init_display()
-
     def _lcd_strobe(self, data):
-        self._safe_write(data | ENABLE)
+        self.self.bus.write_byte(data | ENABLE)
         sleep(E_PULSE)
-        self._safe_write(data & ~ENABLE)
+        self.self.bus.write_byte(data & ~ENABLE)
         sleep(E_DELAY)
 
     def _lcd_byte(self, bits, mode):
@@ -78,10 +71,10 @@ class I2CLCD:
         high = mode | (bits & 0xF0) | bl
         low = mode | ((bits << 4) & 0xF0) | bl
 
-        self._safe_write(high)
+        self.self.bus.write_byte(high)
         self._lcd_strobe(high)
 
-        self._safe_write(low)
+        self.self.bus.write_byte(low)
         self._lcd_strobe(low)
 
     # -------------------------------
@@ -90,7 +83,6 @@ class I2CLCD:
 
     def _init_display(self):
         sleep(0.05)
-
         self._lcd_byte(0x33, LCD_CMD)
         self._lcd_byte(0x32, LCD_CMD)
         self._lcd_byte(0x28, LCD_CMD)
@@ -104,13 +96,17 @@ class I2CLCD:
         sleep(0.002)
 
     def write(self, text, line=1):
-        if line == 1:
-            self._lcd_byte(LCD_LINE_1, LCD_CMD)
-        else:
-            self._lcd_byte(LCD_LINE_2, LCD_CMD)
+        for _ in range(self.max_retries):
+            try:
+                if line == 1:
+                    self._lcd_byte(LCD_LINE_1, LCD_CMD)
+                else:
+                    self._lcd_byte(LCD_LINE_2, LCD_CMD)
 
-        for char in text.ljust(16)[:16]:
-            self._lcd_byte(ord(char), LCD_CHR)
+                for char in text.ljust(16)[:16]:
+                    self._lcd_byte(ord(char), LCD_CHR)
+            except OSError:
+                self._init_display()
 
     def reset(self):
         self._init_display()
