@@ -12,6 +12,6 @@ lcd = I2CLCD(bus, addr)
 i = 0
 while True:
     lcd.write(f"Count: {i}", line=1)
-    lcd.write("Weather OK   ", line=2)
+    lcd.write("Pi Weather Stn", line=2)
     i += 1
     sleep(1)
