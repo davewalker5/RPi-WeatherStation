@@ -79,8 +79,6 @@ def main():
             lcd = I2CLCD(bus, lcd_addr)
             display = LCDDisplay(lcd, sampler, args.display_interval)
             display.start()
-        else:
-            lcd = None
 
     # Set up the request handler
     RequestHandler.sampler = sampler
