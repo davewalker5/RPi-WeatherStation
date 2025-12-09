@@ -25,33 +25,38 @@ class LCDDisplay(threading.Thread):
         self.lcd.write("starting ...", line=2)
 
     def _display_reading(self, values, member, label, units):
-        # Extract the timestamp and reading
-        text = f"{label} = {values[member]}{units}" if values else f"No {label} reading"
+        # Check there's a reading to display
+        have_reading = values is not None
+        if have_reading:
+            # Extract the timestamp and reading
+            text = f"{label} = {values[member]}{units}" if values else f"No {label} reading"
 
-        # Display the timestamp and reading
-        self.lcd.clear()
-        self.lcd.write(datetime.datetime.now().strftime('%H:%M:%S'), line=1)
-        self.lcd.write(text, line=2)
+            # Display the timestamp and reading
+            self.lcd.clear()
+            self.lcd.write(datetime.datetime.now().strftime('%H:%M:%S'), line=1)
+            self.lcd.write(text, line=2)
+
+        return have_reading
 
     def _display_temperature(self):
         values = self.sampler.get_latest_bme()
-        self._display_reading(values, "temperature_c", "T", f"{DEGREE}C")
+        return self._display_reading(values, "temperature_c", "T", f"{DEGREE}C")
 
     def _display_pressure(self):
         values = self.sampler.get_latest_bme()
-        self._display_reading(values, "pressure_hpa", "P", f" hPa")
+        return self._display_reading(values, "pressure_hpa", "P", f" hPa")
 
     def _display_humidity(self):
         values = self.sampler.get_latest_bme()
-        self._display_reading(values, "humidity_pct", "H", f"%")
+        return self._display_reading(values, "humidity_pct", "H", f"%")
 
     def _display_illuminance(self):
         values = self.sampler.get_latest_veml()
-        self._display_reading(values, "illuminance_lux", "I", f" lux")
+        return self._display_reading(values, "illuminance_lux", "I", f" lux")
 
     def _display_air_quality(self):
         values = self.sampler.get_latest_sgp()
-        self._display_reading(values, "voc_rating", "VOC", "")
+        return self._display_reading(values, "voc_rating", "VOC", "")
 
     def run(self):
         """
@@ -80,10 +85,21 @@ class LCDDisplay(threading.Thread):
                     self.started = True
                     self._display_startup()
                 else:
-                    functions[index]()
-                    index = index + 1
-                    if index >= len(functions):
-                        index = 0
+                    # Loop until we've found and displayed a reading for a sensor. This will loop forever
+                    # if there are no sensors attached but then a weather station with no sensors isn't
+                    # much use!
+                    while True:
+                        # Try to display the reading for the sensor at the current index
+                        have_reading = functions[index]()
+
+                        # Move on to the next index
+                        index = index + 1
+                        if index >= len(functions):
+                            index = 0
+
+                        # If we got a reading, break out
+                        if have_reading:
+                            break
 
             except Exception as ex:
                 logging.warning("Display error: %s", ex)

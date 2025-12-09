@@ -6,7 +6,7 @@ import os
 import datetime as dt
 from weather import VEML7700, Database
 from smbus2 import SMBus, i2c_msg
-from i2c import I2CDevice
+from i2c import I2CDevice, i2c_device_present
 
 
 STOP = False
@@ -56,6 +56,11 @@ def main():
     # Create the wrapper to query the BME280
     bus = SMBus(args.bus)
     addr = int(args.veml_addr, 16)
+    if not i2c_device_present(bus, addr, False):
+        ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
+        print(f"{ts}  I2C error: No device found at address {args.veml_addr}", file=sys.stderr)
+        bus.close()
+        return
     i2c_device = I2CDevice(bus, addr, i2c_msg)
     sensor = VEML7700(i2c_device, args.veml_gain, args.veml_integration_ms)
 
