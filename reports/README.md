@@ -4,19 +4,20 @@ This folder contains Jupyter notebooks and supporting files for reporting on sen
 
 The following reports are currently available:
 
-| Notebook                         | Report Type                                                                 |
-| -------------------------------- | --------------------------------------------------------------------------- |
-| bme280-health-missing-data.ipynb | Missing value report for the BME280 sensors                                 |
-| bme280-health-temperature.ipynb  | BME280 temperature sensor health                                            |
-| bme280-health-pressure.ipynb     | BME280 pressure sensor health                                               |
-| bme280-health-humidity.ipynb     | BME280 humidity sensor health                                               |
-| daily-summary.ipynb              | Chart daily mean values for all applicable sensor readings                  |
-| dew-point-comfort.ipynb          | Chart daily comfort score and diurnal dew point and comfort score variation |
-| diurnal-heatmap.ipynb            | Chart diurnal heatmaps for all applicable sensor readings over time         |
-| diurnal-pattern.ipynb            | Chart diurnal variation in all applicable sensor readings                   |
-| pressure-event.ipynb             | Identify pressure events as a simple proxy for weather fronts               |
-| voc-rating-distribution.ipynb    | Chart all-time VOC index distribution                                       |
-| weekend-variation.ipynb          | Weekend vs weekday comparisons for all applicable sensor readings           |
+| Notebook                          | Report Type                                                                 |
+| --------------------------------- | --------------------------------------------------------------------------- |
+| bme280-health-missing-data.ipynb  | Missing value report for the BME280 sensors                                 |
+| bme280-health-temperature.ipynb   | BME280 temperature sensor health                                            |
+| bme280-health-pressure.ipynb      | BME280 pressure sensor health                                               |
+| bme280-health-humidity.ipynb      | BME280 humidity sensor health                                               |
+| daily-summary.ipynb               | Chart daily mean values for all applicable sensor readings                  |
+| dew-point-comfort.ipynb           | Chart daily comfort score and diurnal dew point and comfort score variation |
+| diurnal-heatmap.ipynb             | Chart diurnal heatmaps for all applicable sensor readings over time         |
+| diurnal-pattern.ipynb             | Chart diurnal variation in all applicable sensor readings                   |
+| pressure-event.ipynb              | Identify pressure events as a simple proxy for weather fronts               |
+| veml7700-health-illuminance.ipynb | VEML7700 sensor health                                                      |
+| voc-rating-distribution.ipynb     | Chart all-time VOC index distribution                                       |
+| weekend-variation.ipynb           | Weekend vs weekday comparisons for all applicable sensor readings           |
 
 ## Setting Up the Reporting Environment
 
