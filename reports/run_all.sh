@@ -9,7 +9,16 @@ export PYTHONWARNINGS="ignore"
 
 # Define a list of notebooks to skip
 declare -a exclusions=(
+    "database.ipynb"
+    "db-query-test.ipynb"
+    "export.ipynb"
+    "pathutils.ipynb"
 )
+
+# Store the current working directory so we can restore it and change to the folder
+# containing the notebook
+CURDIR=`pwd`
+cd "$REPORTS_ROOT/notebooks"
 
 # Get a list of Jupyter Notebooks and iterate over them
 files=$(find `pwd` -name '*.ipynb')
@@ -25,7 +34,10 @@ while IFS= read -r file; do
 
     # If this notebook isn't in the exclusions list, run it
     if [[ found -eq 0 ]]; then
-    echo $file
+        echo $file
         papermill "$file" /dev/null
     fi
 done <<< "$files"
+
+# Restore the current working directory
+cd "$CURDIR"

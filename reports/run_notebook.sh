@@ -10,4 +10,7 @@ export REPORTS_ROOT=$( cd "$( dirname "$0" )" && pwd )
 . $REPORTS_ROOT/venv/bin/activate
 
 export PYTHONWARNINGS="ignore"
+CURDIR=`pwd`
+cd "$REPORTS_ROOT/notebooks"
 papermill "$1" /dev/null
+cd "$CURDIR"

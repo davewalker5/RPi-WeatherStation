@@ -26,6 +26,8 @@ The following is a table of the current supported sensors:
 | Illuminance | VEML7700 | [VEML7700 datasheet](https://www.vishay.com/docs/84286/veml7700.pdf) |
 | Air Quality | SGP40 | [Sensiron SGP40 datasheet](https://sensirion.com/resource/datasheet/sgp40?utm_source=chatgpt.com) |
 
+Reporting is available using Jupyter Notebooks and the reports in the "reports" folder.
+
 ## Getting Started
 
 Please see the [Wiki](https://github.com/davewalker5/RPi-WeatherStation/wiki) for configuration details and the user guide.
