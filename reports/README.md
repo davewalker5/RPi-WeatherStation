@@ -10,6 +10,7 @@ The following reports are currently available:
 | dew-point-comfort.ipynb       | Chart daily comfort score and diurnal dew point and comfort score variation |
 | diurnal-heatmap.ipynb         | Chart diurnal heatmaps for all applicable sensor readings over time         |
 | diurnal-pattern.ipynb         | Chart diurnal variation in all applicable sensor readings                   |
+| pressure-event.ipynb          | Identify pressure events as a simple proxy for weather fronts               |
 | voc-rating-distribution.ipynb | Chart all-time VOC index distribution                                       |
 | weekend-variation.ipynb       | Weekend vs weekday comparisons for all applicable sensor readings           |
 
