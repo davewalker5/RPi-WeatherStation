@@ -81,8 +81,9 @@ def main():
         global STOP
         while not STOP:
             try:
-                # Purge old data
+                # Purge old data and snapshot database sizes
                 database.purge()
+                database.snapshot_sizes()
 
                 # Take the next readings
                 sample_sensors(sensor, database)
