@@ -220,7 +220,7 @@ class Database:
             con = sqlite3.connect(self.db_path)
             if not self._has_snapshot_for_today(con):
                 # Capture the timestamp for "now" (UTC)
-                ts = dt.now(dt.timezone.utc).replace(microsecond=0).isoformat()
+                ts = now.replace(microsecond=0).isoformat()
 
                 # Database size
                 con = sqlite3.connect(self.db_path)
