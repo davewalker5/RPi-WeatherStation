@@ -217,6 +217,7 @@ class Database:
             self.last_snapshot_check = now
 
             # See if we have a size snapshot for today. If not, create one
+            con = sqlite3.connect(self.db_path)
             if not self._has_snapshot_for_today(con):
                 # Capture the timestamp for "now" (UTC)
                 ts = dt.now(dt.timezone.utc).replace(microsecond=0).isoformat()
@@ -243,7 +244,7 @@ class Database:
                         con.execute(INSERT_SIZES_SQL, (ts, "table", t, int(b), "payload_estimate"))
 
                 con.commit()
-                con.close()
+            con.close()
 
     def insert_bme_row(self, temperature, pressure, humidity):
         timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
