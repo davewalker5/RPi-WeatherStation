@@ -1,7 +1,7 @@
 import time
 from os import environ
 import datetime as dt
-from weather import VEML7700
+from sensors import VEML7700
 from smbus2 import SMBus, i2c_msg
 from i2c import I2CDevice
 

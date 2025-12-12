@@ -1,6 +1,6 @@
 import argparse
 import os
-from helpers.bme280_inversion_helper import BME280InversionHelper
+from helpers import BME280InversionHelper
 from smbus2 import SMBus
 
 

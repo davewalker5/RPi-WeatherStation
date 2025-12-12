@@ -4,7 +4,8 @@ import time
 import sys
 import os
 import datetime as dt
-from weather import VEML7700, Database
+from sensors import VEML7700
+from db import Database
 from smbus2 import SMBus, i2c_msg
 from i2c import I2CDevice, i2c_device_present
 

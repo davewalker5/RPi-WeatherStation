@@ -1,7 +1,7 @@
 import time
 from os import environ
 import datetime as dt
-from weather import SGP40
+from sensors import SGP40
 from smbus2 import SMBus, i2c_msg
 from i2c import I2CDevice
 from sensirion_gas_index_algorithm.voc_algorithm import VocAlgorithm

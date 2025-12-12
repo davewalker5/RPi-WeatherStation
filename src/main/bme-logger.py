@@ -4,7 +4,8 @@ import time
 import sys
 import os
 import datetime as dt
-from weather import BME280, Database
+from sensors import BME280
+from db import Database
 from i2c import i2c_device_present
 from smbus2 import SMBus
 

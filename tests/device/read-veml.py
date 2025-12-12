@@ -1,8 +1,9 @@
 import argparse
 import os
 import datetime as dt
-from weather import VEML7700
-from smbus2 import SMBus
+from i2c import I2CDevice
+from sensors import VEML7700
+from smbus2 import SMBus, i2c_msg
 
 
 def main():
@@ -25,7 +26,8 @@ def main():
     # Create the VEML7700 wrapper
     bus = SMBus(args.bus)
     addr = int(args.veml_addr, 16)
-    sensor = VEML7700(bus, addr, args.veml_gain, args.veml_integration_ms)
+    i2c_device = I2CDevice(bus, addr, i2c_msg)
+    sensor = VEML7700(i2c_device, args.veml_gain, args.veml_integration_ms)
     
     # Read the sensors
     als, white, lux = sensor.read()

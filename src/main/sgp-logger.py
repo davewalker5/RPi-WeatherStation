@@ -4,7 +4,8 @@ import time
 import sys
 import os
 import datetime as dt
-from weather import SGP40, Database
+from sensors import SGP40
+from db import Database
 from i2c import I2CDevice, i2c_device_present
 from smbus2 import SMBus, i2c_msg
 from sensirion_gas_index_algorithm.voc_algorithm import VocAlgorithm
