@@ -212,9 +212,9 @@ class Database:
         # purge old data periodically
         now = dt.datetime.now(dt.timezone.utc)
         elapsed = SNAPSHOT_INTERVAL_MINUTES if self.last_snapshot_check is None else (now - self.last_snapshot_check).total_seconds() / 60.0
-        if elapsed > SNAPSHOT_INTERVAL_MINUTES:
+        if elapsed >= SNAPSHOT_INTERVAL_MINUTES:
             # Set the "last snapshot check" timestamp
-            self.last_purged = now
+            self.last_snapshot_check = now
 
             # See if we have a size snapshot for today. If not, create one
             if not self._has_snapshot_for_today(con):
