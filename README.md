@@ -8,7 +8,7 @@
 
 ## About
 
-<img src="https://github.com/davewalker5/RPi-WeatherStation/blob/main/diagrams/dashboard.png" width="600" alt="Raspberry Pi Weather Station"/>
+<img src="https://github.com/davewalker5/RPi-WeatherStation/blob/main/diagrams/graphical-dashboard.png" width="800" alt="Raspberry Pi Weather Station"/>
 
 The RPi-WeatherStation is a simple home weather station based around a [Waveshare Raspberry Pi Zero WH](https://www.waveshare.com/wiki/Raspberry_Pi_Zero).
 
