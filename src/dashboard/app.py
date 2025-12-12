@@ -14,8 +14,15 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("graphical.html")
 
+@app.route("/simple")
+def simple():
+    return render_template("simple.html")
+
+@app.route("/graphical")
+def graphical():
+    return render_template("graphical.html")
 
 @app.route("/api/current")
 def current_weather():
