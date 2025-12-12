@@ -120,8 +120,9 @@ class Sampler(threading.Thread):
                     # Reset the reporting counter
                     counter = 0
 
-                    # Purge old data
+                    # Purge old data and snapshot sizes
                     self.database.purge()
+                    self.database.snapshot_sizes()
 
                     # Take the next set of BME280 readings and cache them as the latest readings
                     if self.bme280:
