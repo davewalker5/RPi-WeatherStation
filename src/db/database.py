@@ -73,8 +73,8 @@ DELETE FROM DB_SIZE_SNAPSHOTS WHERE Timestamp <= ?;
 ]
 
 INSERT_SIZES_SQL = """
-"INSERT INTO db_size_snapshots (Timestamp, Object_Type, Object_Name, Bytes, Method)
-VALUES (?,?,?,?,?)"
+INSERT INTO DB_SIZE_SNAPSHOTS (Timestamp, Object_Type, Object_Name, Bytes, Method)
+VALUES (?,?,?,?,?);
 """
 
 INSERT_BME_SQL = """
