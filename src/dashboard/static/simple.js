@@ -43,7 +43,7 @@ async function fetchCurrent() {
     const now = new Date();
     updatedEl.textContent = "Last updated: " + now.toLocaleTimeString();
   } catch (err) {
-      errorEl.textContent = err;
+    errorEl.textContent = err;
   }
 }
 

@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pi Weather Station</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='modern-normalize.css') }}">
+<style>
+  :root {
+    --bg: #0b1020;
+    --card: #111a33;
+    --text: #e8eeff;
+    --muted: #aab6e6;
+    --accent: #67b7ff;
+    --warn: #ffcc66;
+    --bad: #ff6b6b;
+    --good: #66ffb3;
+  }
+  body { margin:0; font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+         background: var(--bg); color: var(--text); }
+  header { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,.08); }
+  header h1 { margin: 0; font-size: 18px; font-weight: 650; }
+  header .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+  .grid { display: grid; gap: 14px; padding: 14px; grid-template-columns: repeat(12, 1fr); }
+  .card { background: var(--card); border: 1px solid rgba(255,255,255,.08);
+          border-radius: 14px; padding: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+  .card h2 { margin: 0 0 10px; font-size: 14px; color: var(--muted); font-weight: 600; letter-spacing: .2px; }
+  .span-4 { grid-column: span 4; }
+  .span-6 { grid-column: span 6; }
+  .span-12{ grid-column: span 12; }
+  @media (max-width: 900px) {
+    .span-4, .span-6 { grid-column: span 12; }
+  }
+
+  .gauge-wrap { display:flex; align-items:center; gap: 14px; }
+  .gauge { width: 140px; height: 140px; flex: 0 0 auto; }
+  .value { font-size: 34px; font-weight: 720; letter-spacing: -.5px; }
+  .unit { font-size: 14px; color: var(--muted); margin-left: 6px; }
+  .meta { color: var(--muted); font-size: 13px; margin-top: 6px; }
+
+  .bar { height: 12px; background: rgba(255,255,255,.08); border-radius: 999px; overflow: hidden; }
+  .bar > div { height: 100%; width: 0%; background: var(--accent); border-radius: 999px; transition: width .4s ease; }
+  .row { display:flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .row .big { font-size: 22px; font-weight: 700; }
+  .row .small { color: var(--muted); font-size: 13px; }
+
+  .vocRatingStars { display:flex; gap: 3px; font-size: 18px; letter-spacing: 1px; }
+  .star { opacity: .25; }
+  .star.on { opacity: 1; color: var(--warn); }
+
+  /* SVG gauge styling */
+  .track { stroke: rgba(255,255,255,.10); }
+  .arc { stroke: var(--accent); transition: stroke-dashoffset .4s ease, stroke .4s ease; }
+  .tick { fill: rgba(255,255,255,.18); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Pi Weather Station</h1>
+  <div class="sub" id="updated">—</div>
+</header>
+
+<section class="grid">
+  <div class="card span-4">
+    <h2>Temperature</h2>
+    <div class="gauge-wrap">
+      <svg class="gauge" viewBox="0 0 120 120" data-gauge id="temperatureGauge">
+        <circle class="track" cx="60" cy="60" r="46" stroke-width="10" fill="none"/>
+        <circle class="arc"   cx="60" cy="60" r="46" stroke-width="10" fill="none"
+                stroke-linecap="round" transform="rotate(-90 60 60)"/>
+      </svg>
+      <div>
+        <div><span class="value" id="temperature">--</span><span class="unit">°C</span></div>
+        <div class="meta" id="tempMeta">Range: -10 → 40</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card span-4">
+    <h2>Humidity</h2>
+    <div class="gauge-wrap">
+      <svg class="gauge" viewBox="0 0 120 120" data-gauge id="humidityGauge">
+        <circle class="track" cx="60" cy="60" r="46" stroke-width="10" fill="none"/>
+        <circle class="arc"   cx="60" cy="60" r="46" stroke-width="10" fill="none"
+                stroke-linecap="round" transform="rotate(-90 60 60)"/>
+      </svg>
+      <div>
+        <div><span class="value" id="humidity">--</span><span class="unit">%</span></div>
+        <div class="meta">Comfort ~ 40–60%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card span-4">
+    <h2>Pressure</h2>
+    <div class="gauge-wrap">
+      <svg class="gauge" viewBox="0 0 120 120" data-gauge id="pressureGauge">
+        <circle class="track" cx="60" cy="60" r="46" stroke-width="10" fill="none"/>
+        <circle class="arc"   cx="60" cy="60" r="46" stroke-width="10" fill="none"
+                stroke-linecap="round" transform="rotate(-90 60 60)"/>
+      </svg>
+      <div>
+        <div><span class="value" id="pressure">--</span><span class="unit">hPa</span></div>
+        <div class="meta">Typical ~ 980–1040</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card span-6">
+    <h2>Illuminance</h2>
+    <div class="row">
+      <div class="big"><span id="illuminance">--</span> <span class="small">lux</span></div>
+      <div class="small" id="illuminanceNotes">—</div>
+    </div>
+    <div class="bar" style="margin-top:10px"><div id="illuminanceBar"></div></div>
+  </div>
+
+  <div class="card span-6">
+    <h2>Air Quality</h2>
+    <div class="row">
+      <div>
+        <div class="big" id="vocLabel">—</div>
+        <div class="small">Rating</div>
+      </div>
+      <div class="vocRatingStars" id="vocRatingStars"></div>
+    </div>
+    <div class="bar" style="margin-top:10px"><div id="vocBar"></div></div>
+    <div class="meta" id="vocIndex" style="margin-top:8px">—</div>
+  </div>
+
+  <div class="card span-12">
+    <details id="rawDetails">
+      <summary style="cursor:pointer; color: var(--muted); font-weight: 600;">
+        Raw Data
+      </summary>
+      <pre id="raw" style="margin:10px 0 0; white-space: pre-wrap; color: var(--muted);"></pre>
+    </details>
+  </div>
+</section>
+
+<script src="{{ url_for('static', filename='graphical.js') }}"></script>
+</body>
+</html>
