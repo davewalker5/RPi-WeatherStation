@@ -1,5 +1,5 @@
 import pytest
-from weather import BME280
+from sensors import BME280
 from helpers import MockSMBus, BME280_TRIMMING_PARAMETERS
 
 

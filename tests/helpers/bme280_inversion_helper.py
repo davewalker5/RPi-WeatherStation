@@ -1,4 +1,4 @@
-from weather import BME280Compensation
+from sensors import BME280Compensation
 import json
 
 

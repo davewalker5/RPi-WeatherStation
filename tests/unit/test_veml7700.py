@@ -1,5 +1,5 @@
 import pytest
-from weather import VEML7700
+from sensors import VEML7700
 from i2c import I2CDevice
 from helpers import MockSMBus, MockI2CMsg
 

@@ -1,7 +1,7 @@
 import argparse
 import os
 import datetime as dt
-from weather import VEML7700
+from sensors import VEML7700
 from smbus2 import SMBus
 
 

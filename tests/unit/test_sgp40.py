@@ -1,5 +1,5 @@
 import pytest
-from weather import SGP40
+from sensors import SGP40
 from i2c import I2CDevice
 from helpers import MockSMBus, MockI2CMsg, MockVOCAlgorithm
 

@@ -4,7 +4,9 @@ import threading
 import os
 from http.server import ThreadingHTTPServer
 from i2c import I2CLCD, I2CDevice, i2c_device_present
-from weather import BME280, Database, RequestHandler, Sampler, VEML7700, LCDDisplay, SGP40
+from sensors import BME280, VEML7700, SGP40
+from db import Database
+from service import RequestHandler, Sampler, LCDDisplay
 from smbus2 import SMBus, i2c_msg
 from sensirion_gas_index_algorithm.voc_algorithm import VocAlgorithm
 

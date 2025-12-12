@@ -3,10 +3,10 @@ import logging
 import threading
 import time
 import datetime as dt
-from .bme280 import BME280
-from .veml7700 import VEML7700
-from .sgp40 import SGP40
-from .database import Database
+from sensors import BME280
+from sensors import VEML7700
+from sensors import SGP40
+from db import Database
 
 
 class Sampler(threading.Thread):

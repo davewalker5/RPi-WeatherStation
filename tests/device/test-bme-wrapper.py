@@ -1,7 +1,7 @@
 import time
 from os import environ
 import datetime as dt
-from weather import BME280
+from sensors import BME280
 from smbus2 import SMBus
 
 
