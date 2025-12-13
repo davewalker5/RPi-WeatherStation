@@ -189,23 +189,25 @@ class Database:
         con.close()
 
     def purge(self):
-        # Get the current timestamp and find out how long it is since old data was last purged. Only
-        # purge old data periodically
-        now = dt.datetime.now(dt.timezone.utc)
-        elapsed = PURGE_INTERVAL_MINUTES if self.last_purged is None else (now - self.last_purged).total_seconds() / 60.0
-        if elapsed >= PURGE_INTERVAL_MINUTES:
-            # Set the "last purged" timestamp
-            self.last_purged = now
+        # Check there's a retention period applied
+        if self.retention > 0:
+            # Get the current timestamp and find out how long it is since old data was last purged. Only
+            # purge old data periodically
+            now = dt.datetime.now(dt.timezone.utc)
+            elapsed = PURGE_INTERVAL_MINUTES if self.last_purged is None else (now - self.last_purged).total_seconds() / 60.0
+            if elapsed >= PURGE_INTERVAL_MINUTES:
+                # Set the "last purged" timestamp
+                self.last_purged = now
 
-            # Connect to the database and purge old data
-            timestamp = now - dt.timedelta(minutes=self.retention)
-            cutoff = timestamp.replace(microsecond=0).isoformat() + "Z"
-            con = sqlite3.connect(self.db_path)
-            cur = con.cursor()
-            for sql in PURGE_SQL:
-                cur.execute(sql, (cutoff,))
-            con.commit()
-            con.close()
+                # Connect to the database and purge old data
+                timestamp = now - dt.timedelta(minutes=self.retention)
+                cutoff = timestamp.replace(microsecond=0).isoformat() + "Z"
+                con = sqlite3.connect(self.db_path)
+                cur = con.cursor()
+                for sql in PURGE_SQL:
+                    cur.execute(sql, (cutoff,))
+                con.commit()
+                con.close()
 
     def snapshot_sizes(self):
         # Get the current timestamp and find out how long it is since old data was last purged. Only
