@@ -36,7 +36,7 @@ def main():
     ap.add_argument("--sample-interval", type=float, default=60.0, help="Sample interval seconds")
     ap.add_argument("--display-interval", type=float, default=5.0, help="Display interval seconds")
     ap.add_argument("--no-lcd", action="store_true", help="Suppress output to the LCD display")
-    ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
+    ap.add_argument("--retention", type=int, default=0, help="Data retention period (minutes)")
     args = ap.parse_args()
 
     # Show the argument values

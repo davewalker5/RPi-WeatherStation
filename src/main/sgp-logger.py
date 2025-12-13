@@ -38,7 +38,7 @@ def sample_sensors(sensor, database, report_readings):
 def main():
     ap = argparse.ArgumentParser(description="SGP40 to SQLite and Console Logger")
     ap.add_argument("--db", default="weather.db", help="SQLite database path")
-    ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
+    ap.add_argument("--retention", type=int, default=0, help="Data retention period (minutes)")
     ap.add_argument("--interval", type=int, default=60, help="Sample reporting interval in seconds")
     ap.add_argument("--bus", type=int, default=0, help="I2C bus number")
     ap.add_argument("--sgp-addr", default="0x10", help="SGP40 I2C address")

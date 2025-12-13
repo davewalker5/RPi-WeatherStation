@@ -33,7 +33,7 @@ def sample_sensors(sensor, database):
 def main():
     ap = argparse.ArgumentParser(description="VEML7700 to SQLite and Console Logger")
     ap.add_argument("--db", default="weather.db", help="SQLite database path")
-    ap.add_argument("--retention", type=int, default=43200, help="Data retention period (minutes)")
+    ap.add_argument("--retention", type=int, default=0, help="Data retention period (minutes)")
     ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
     ap.add_argument("--bus", type=int, default=0, help="I2C bus number")
     ap.add_argument("--veml-addr", default="0x10", help="VEML7700 I2C address")
