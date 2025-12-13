@@ -27,8 +27,9 @@ def sample_sensors(sensor, database, report_readings):
     """
     sraw, voc_index, voc_label, voc_rating = sensor.read()
     if report_readings:
-        # Purge old data
+        # Purge old data and snapshot sizes
         database.purge()
+        database.snapshot_sizes()
 
         # Store and report the reading
         timestamp = database.insert_sgp_row(sraw, voc_index, voc_label, voc_rating)
