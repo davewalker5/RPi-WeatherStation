@@ -12,6 +12,14 @@ class MockSMBus:
         self.queue_data = [bytes(queue_data)] if queue_data else []
         self.i2c_messages = []
 
+    # --- Mocks for MUX channel selection -------------------------
+
+    def write_byte(self, addr, byte):
+        pass
+
+    def read_byte(self, addr):
+        return None
+
     # --- Mocks for the BME280 / VEML7700 -------------------------
 
     def write_byte_data(self, addr, reg, value):

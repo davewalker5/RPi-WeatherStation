@@ -1,13 +1,19 @@
-from os import environ, getenv
 from smbus2 import SMBus
+from registry import AppSettings
 
-mux_addr = int(mux_addr, 16) if (mux_addr:= getenv("MUX_ADDR", "").strip()) else None
-bus_num = int(environ["BUS_NUMBER"])
-addr = int(environ["BME_ADDR"], 16)
-channel = int(channel) if (channel:= getenv("BME_CHANNEL", "").strip()) else None
+# Load the configuration settings and extract the communication properties
+settings = AppSettings(AppSettings.default_settings_file())
+mux_address = settings.devices["MUX"]["address"]
+bme_address = settings.devices["BME280"]["address"]
+bme_channel = settings.devices["BME280"]["channel"]
 
-bus = SMBus(bus_num)
-if mux_addr and channel:
-    bus.write_byte(mux_addr, 1 << channel)
-chip_id = bus.read_byte_data(addr, 0xD0)
+# Create the SMBus instance
+bus = SMBus(settings.settings["bus_number"])
+
+# Select the BME280 channel
+if mux_address and bme_channel:
+    bus.write_byte(mux_address, 1 << bme_channel)
+
+# Get the chip ID
+chip_id = bus.read_byte_data(bme_address, 0xD0)
 print("BME280 chip ID:", hex(chip_id))

@@ -1,5 +1,5 @@
 import pytest
-from sensors import BME280
+from registry import AppSettings, DeviceFactory
 from helpers import MockSMBus, BME280_TRIMMING_PARAMETERS
 
 
@@ -87,8 +87,10 @@ HUMIDITY_CLIP_HIGH = {
     HUMIDITY_CLIP_HIGH
 ])
 def test_bme280_wrapper(fixture):
+    settings = AppSettings(AppSettings.default_settings_file())
     bus = MockSMBus(BME280_TRIMMING_PARAMETERS, fixture["block"], None)
-    sensor = BME280(bus=bus, address=MockSMBus.BME280_ADDRESS, mux_address=None, channel=None)
+    factory = DeviceFactory(bus, None, None, settings)
+    sensor = factory.create_device("BME280")
 
     T, P, H = sensor.read()
 
