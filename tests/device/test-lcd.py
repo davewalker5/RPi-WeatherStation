@@ -1,12 +1,14 @@
 from i2c import I2CLCD
 from time import sleep
-from os import environ, getenv
+from registry import AppSettings, DeviceType
 from smbus2 import SMBus
 
-mux_addr = int(mux_addr, 16) if (mux_addr:= getenv("MUX_ADDR", "").strip()) else None
-bus_num = int(environ["BUS_NUMBER"])
-addr = int(environ["LCD_ADDR"], 16)
-channel = int(channel) if (channel:= getenv("LCD_CHANNEL", "").strip()) else None
+# Load the configuration settings and extract the communication properties
+settings = AppSettings(AppSettings.default_settings_file())
+bus_num = settings.settings["bus_number"]
+mux_addr = int(settings.devices[DeviceType.MUX]["address"], 16)
+addr = int(settings.devices[DeviceType.LCD]["address"], 16)
+channel = settings.devices[DeviceType.LCD]["channel"]
 
 bus = SMBus(bus_num)
 lcd = I2CLCD(bus, addr, mux_addr, channel)
