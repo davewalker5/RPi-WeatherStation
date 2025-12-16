@@ -5,7 +5,5 @@ PROJECT_FOLDER=$( cd "$( dirname "$SCRIPT_PATH" )/.." && pwd )
 . "$PROJECT_FOLDER/scripts/config.sh"
 
 python3 "$PROJECT_FOLDER/src/main/sgp-logger.py" \
-    --bus $BUS_NUMBER \
-    --sgp-addr $SGP_ADDR \
     --db "$PROJECT_FOLDER/data/weather.db" \
     "$@"
