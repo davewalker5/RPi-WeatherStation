@@ -13,7 +13,7 @@ E_DELAY = 0.0005
 
 
 class I2CLCD:
-    def __init__(self, bus, addr, backlight=True, max_retries=3):
+    def __init__(self, bus, addr, mux_addr, channel, backlight=True, max_retries=3):
         """
         bus: Mock or real SMBus()
         addr: I2C address of the LCD
@@ -22,6 +22,8 @@ class I2CLCD:
         """
         self.bus = bus
         self.addr = addr
+        self.mux_addr = mux_addr
+        self.channel = channel
         self.backlight = backlight
         self.max_retries = max_retries
 
@@ -58,6 +60,9 @@ class I2CLCD:
     # -------------------------------
     # Low level I2C helpers
     # -------------------------------
+    def _select_channel(self):
+        if self.mux_addr and self.channel:
+            self.bus.write_byte(self.mux_addr, 1 << self.channel)
 
     def _lcd_strobe(self, data):
         """
@@ -104,6 +109,8 @@ class I2CLCD:
         """
         Initialise the LCD display
         """
+        self._select_channel()
+
         sleep(0.05)
         self._lcd_byte(0x33, LCD_CMD)
         self._lcd_byte(0x32, LCD_CMD)
@@ -117,6 +124,7 @@ class I2CLCD:
         """
         Clear the LCD display
         """
+        self._select_channel()
         self._lcd_byte(0x01, LCD_CMD)
         sleep(0.002)
 
@@ -125,6 +133,7 @@ class I2CLCD:
         Write text to the specified line of the display
         Return the number of attempts at writing and a success code
         """
+        self._select_channel()
         for i in range(self.max_retries):
             try:
                 if line == 1:

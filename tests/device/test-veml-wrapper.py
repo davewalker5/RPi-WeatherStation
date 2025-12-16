@@ -1,5 +1,5 @@
 import time
-from os import environ
+from os import environ, getenv
 import datetime as dt
 from sensors import VEML7700
 from smbus2 import SMBus, i2c_msg
@@ -7,9 +7,11 @@ from i2c import I2CDevice
 
 
 def main():
+    mux_addr = int(mux_addr, 16) if (mux_addr:= getenv("MUX_ADDR", "").strip()) else None
     bus = SMBus(int(environ["BUS_NUMBER"]))
     addr = int(environ["VEML_ADDR"], 16)
-    i2c_device = I2CDevice(bus, addr, i2c_msg)
+    channel = int(channel) if (channel:= getenv("VEML_CHANNEL", "").strip()) else None
+    i2c_device = I2CDevice(bus, addr, mux_addr, channel, i2c_msg)
     sensor = VEML7700(
         i2c_device,
         gain=float(environ["VEML_GAIN"]),

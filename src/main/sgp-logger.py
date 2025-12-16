@@ -42,7 +42,9 @@ def main():
     ap.add_argument("--retention", type=int, default=0, help="Data retention period (minutes)")
     ap.add_argument("--interval", type=int, default=60, help="Sample reporting interval in seconds")
     ap.add_argument("--bus", type=int, default=0, help="I2C bus number")
+    ap.add_argument("--mux-addr", default="0x70", help="Multiplexer address")
     ap.add_argument("--sgp-addr", default="0x10", help="SGP40 I2C address")
+    ap.add_argument("--sgp-channel", default="7", help="Multiplexer channel")
     ap.add_argument("--once", action="store_true", help="Take one reading and exit")
     args = ap.parse_args()
 
@@ -61,12 +63,14 @@ def main():
     # Create the wrapper to query the SGP40
     bus = SMBus(args.bus)
     addr = int(args.sgp_addr, 16)
-    if not i2c_device_present(bus, addr, True):
+    mux_addr = int(args.mux_addr, 16) if (args.mux_addr.strip()) else None
+    channel = int(args.sgp_channel, 16) if (args.sgp_channel.strip()) else None
+    if not i2c_device_present(bus, addr, mux_addr, channel, True):
         ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
         print(f"{ts}  I2C error: No device found at address {args.sgp_addr}", file=sys.stderr)
         bus.close()
         return
-    i2c_device = I2CDevice(bus, addr, i2c_msg)
+    i2c_device = I2CDevice(bus, addr, mux_addr, channel, i2c_msg)
     sensor = SGP40(i2c_device, VocAlgorithm())
 
     # Create the database access wrapper

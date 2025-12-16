@@ -1,28 +1,38 @@
 import time
-from os import environ
+from os import environ, getenv
 import datetime as dt
 from smbus2 import SMBus
 
 BUS = int(environ["BUS_NUMBER"])
 ADDR = int(environ["VEML_ADDR"], 16)
+MUX_ADDR = int(MUX_ADDR, 16) if (MUX_ADDR:= getenv("MUX_ADDR", "").strip()) else None
+CHANNEL = int(CHANNEL) if (CHANNEL:= getenv("VEML_CHANNEL", "").strip()) else None
 
 REG_CONF  = 0x00
 REG_ALS   = 0x04
 REG_WHITE = 0x05
 REG_ID    = 0x07
 
+
+def select_channel(bus):
+    if MUX_ADDR and CHANNEL:
+        bus.write_byte(MUX_ADDR, 1 << CHANNEL)
+
 def write_u16(bus, reg, value):
+    select_channel(bus)
     value &= 0xFFFF
     lsb = value & 0xFF
     msb = (value >> 8) & 0xFF
     bus.write_i2c_block_data(ADDR, reg, [lsb, msb])
 
 def read_u16(bus, reg):
+    select_channel(bus)
     data = bus.read_i2c_block_data(ADDR, reg, 2)
     return data[0] | (data[1] << 8)
 
 with SMBus(BUS) as bus:
     # 1. Check ID
+    select_channel(bus)
     dev_id = read_u16(bus, REG_ID)
     print(f"ID register: 0x{dev_id:04X} (expected 0xC481 or 0xD481)")
 

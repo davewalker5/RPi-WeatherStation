@@ -1,14 +1,16 @@
 import time
-from os import environ
+from os import environ, getenv
 import datetime as dt
 from sensors import BME280
 from smbus2 import SMBus
 
 
 def main():
+    mux_addr = int(mux_addr, 16) if (mux_addr:= getenv("MUX_ADDR", "").strip()) else None
     bus = SMBus(int(environ["BUS_NUMBER"]))
     addr = int(environ["BME_ADDR"], 16)
-    sensor = BME280(bus, addr)
+    channel = int(channel) if (channel:= getenv("BME_CHANNEL", "").strip()) else None
+    sensor = BME280(bus, addr, mux_addr, channel)
 
     try:
         while True:
