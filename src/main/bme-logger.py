@@ -63,7 +63,7 @@ def main():
         print(f"{ts}  I2C error: No device found at address {args.bme_addr}", file=sys.stderr)
         bus.close()
         return
-    sensor = BME280(bus, addr)
+    sensor = BME280(bus, addr, mux_addr, channel)
 
     # Create the database access wrapper
     database = Database(args.db, args.retention, args.bus, args.bme_addr, None, None, None, None)
