@@ -56,7 +56,7 @@ def main():
     database.create_database()
 
     # Create and start the sampler
-    sampler = Sampler(bme280, veml7700, sgp40, display, database, args.sample_interval, args.display_interval)
+    sampler = Sampler(bme280, veml7700, sgp40, display, database, settings.settings["sample_interval"], settings.settings["display_interval"])
     sampler.start()
 
     # Set up the request handler
