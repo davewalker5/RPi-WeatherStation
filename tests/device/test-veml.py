@@ -1,12 +1,15 @@
 import time
-from os import environ, getenv
 import datetime as dt
+from registry import AppSettings, DeviceType
 from smbus2 import SMBus
 
-BUS = int(environ["BUS_NUMBER"])
-ADDR = int(environ["VEML_ADDR"], 16)
-MUX_ADDR = int(MUX_ADDR, 16) if (MUX_ADDR:= getenv("MUX_ADDR", "").strip()) else None
-CHANNEL = int(CHANNEL) if (CHANNEL:= getenv("VEML_CHANNEL", "").strip()) else None
+
+# Load the configuration settings and extract the communication properties
+settings = AppSettings(AppSettings.default_settings_file())
+BUS = settings.settings["bus_number"]
+MUX_ADDR = int(settings.devices[DeviceType.MUX]["address"], 16)
+ADDR = int(settings.devices[DeviceType.VEML7700]["address"], 16)
+CHANNEL = settings.devices[DeviceType.VEML7700]["channel"]
 
 REG_CONF  = 0x00
 REG_ALS   = 0x04

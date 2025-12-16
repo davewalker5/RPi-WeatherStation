@@ -1,11 +1,13 @@
-from smbus2 import SMBus, i2c_msg
 import time
-from os import environ, getenv
+from registry import AppSettings, DeviceType
+from smbus2 import SMBus, i2c_msg
 
-mux_addr = int(mux_addr, 16) if (mux_addr:= getenv("MUX_ADDR", "").strip()) else None
-bus_num = int(environ["BUS_NUMBER"])
-addr = int(environ["SGP_ADDR"], 16)
-channel = int(channel) if (channel:= getenv("SGP_CHANNEL", "").strip()) else None
+# Load the configuration settings and extract the communication properties
+settings = AppSettings(AppSettings.default_settings_file())
+bus_num = settings.settings["bus_number"]
+mux_addr = int(settings.devices[DeviceType.MUX]["address"], 16)
+addr = int(settings.devices[DeviceType.SGP40]["address"], 16)
+channel = settings.devices[DeviceType.SGP40]["channel"]
 
 print(f"Bus = {bus_num}, Address = {addr} (0x{addr:02X})")
 

@@ -4,9 +4,7 @@ import time
 import sys
 import os
 import datetime as dt
-from sensors import SGP40
-from db import Database
-from i2c import I2CDevice, i2c_device_present
+from registry import AppSettings, DeviceFactory, DeviceType
 from smbus2 import SMBus, i2c_msg
 from sensirion_gas_index_algorithm.voc_algorithm import VocAlgorithm
 
@@ -39,12 +37,6 @@ def sample_sensors(sensor, database, report_readings):
 def main():
     ap = argparse.ArgumentParser(description="SGP40 to SQLite and Console Logger")
     ap.add_argument("--db", default="weather.db", help="SQLite database path")
-    ap.add_argument("--retention", type=int, default=0, help="Data retention period (minutes)")
-    ap.add_argument("--interval", type=int, default=60, help="Sample reporting interval in seconds")
-    ap.add_argument("--bus", type=int, default=0, help="I2C bus number")
-    ap.add_argument("--mux-addr", default="0x70", help="Multiplexer address")
-    ap.add_argument("--sgp-addr", default="0x10", help="SGP40 I2C address")
-    ap.add_argument("--sgp-channel", default="7", help="Multiplexer channel")
     ap.add_argument("--once", action="store_true", help="Take one reading and exit")
     args = ap.parse_args()
 
@@ -60,21 +52,19 @@ def main():
     # Install signal handlers for graceful stop
     signal.signal(signal.SIGTERM, _sig_handler)
 
-    # Create the wrapper to query the SGP40
-    bus = SMBus(args.bus)
-    addr = int(args.sgp_addr, 16)
-    mux_addr = int(args.mux_addr, 16) if (args.mux_addr.strip()) else None
-    channel = int(args.sgp_channel, 16) if (args.sgp_channel.strip()) else None
-    if not i2c_device_present(bus, addr, mux_addr, channel, True):
+    # Load the configuration settings and extract the communication properties
+    settings = AppSettings(AppSettings.default_settings_file())
+    bus = SMBus(settings.settings["bus_number"])
+    factory = DeviceFactory(bus, i2c_msg, VocAlgorithm(), settings)
+    sensor = factory.create_device(DeviceType.SGP40)
+    if not sensor:
         ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-        print(f"{ts}  I2C error: No device found at address {args.sgp_addr}", file=sys.stderr)
+        print(f"{ts} Error: SGP40 not detected", file=sys.stderr)
         bus.close()
         return
-    i2c_device = I2CDevice(bus, addr, mux_addr, channel, i2c_msg)
-    sensor = SGP40(i2c_device, VocAlgorithm())
 
     # Create the database access wrapper
-    database = Database(args.db, args.retention, args.bus, None, None, None, None, args.sgp_addr)
+    database = factory.create_database(args.db)
     database.create_database()
 
     # If one-shot has been specified, sample the sensor, display the results and exit
@@ -83,14 +73,14 @@ def main():
         return
 
     try:
-        report_counter = args.interval - 1
+        report_counter = settings.settings["sample_interval"] - 1
         global STOP
         while not STOP:
             
             try:  
                 # Take the next readings
                 report_counter += 1
-                report_readings = report_counter == args.interval
+                report_readings = report_counter == settings.settings["sample_interval"]
                 sample_sensors(sensor, database, report_readings)
 
                 # Reset the counter, if necessary
@@ -99,7 +89,7 @@ def main():
 
             except OSError as ex:
                 ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-                print(f"{ts}  I2C error: {ex}; retrying in {args.interval}s", file=sys.stderr)
+                print(f"{ts} Error: {ex}", file=sys.stderr)
 
             # Wait for 1 second, which is the sampling interval expected by the Sensiron VOC algorithm
             time.sleep(1)

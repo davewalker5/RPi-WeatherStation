@@ -10,4 +10,4 @@ export PYTHONPATH="$PROJECT_FOLDER/src:$PROJECT_FOLDER/tests"
 echo Project root      = $PROJECT_FOLDER
 echo Python Path       = $PYTHONPATH
 
-python -m pytest "$PROJECT_FOLDER/tests/unit"
+python -m pytest -s "$PROJECT_FOLDER/tests/unit"
