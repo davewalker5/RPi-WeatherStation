@@ -53,7 +53,6 @@ class I2CLCD:
         Force a write so the LCD output updates immediately
         """
         try:
-            self._select_channel()
             self.bus.write_byte(self.addr, self._bl_bit())
         except OSError:
             pass
@@ -70,10 +69,8 @@ class I2CLCD:
         Toggle the enable bit (E) to prompt the LCD display to read the data lines
         and update the display
         """
-        self._select_channel()
         self.bus.write_byte(self.addr, data | ENABLE)
         sleep(E_PULSE)
-        self._select_channel()
         self.bus.write_byte(self.addr, data & ~ENABLE)
         sleep(E_DELAY)
 
@@ -97,12 +94,10 @@ class I2CLCD:
         low = mode | ((bits << 4) & 0xF0) | bl
 
         # Write the high nibble
-        self._select_channel()
         self.bus.write_byte(self.addr, high)
         self._lcd_strobe(high)
 
         # Write the low nibble
-        self._select_channel()
         self.bus.write_byte(self.addr, low)
         self._lcd_strobe(low)
 
@@ -114,6 +109,8 @@ class I2CLCD:
         """
         Initialise the LCD display
         """
+        self._select_channel()
+
         sleep(0.05)
         self._lcd_byte(0x33, LCD_CMD)
         self._lcd_byte(0x32, LCD_CMD)
@@ -127,6 +124,7 @@ class I2CLCD:
         """
         Clear the LCD display
         """
+        self._select_channel()
         self._lcd_byte(0x01, LCD_CMD)
         sleep(0.002)
 
@@ -135,6 +133,7 @@ class I2CLCD:
         Write text to the specified line of the display
         Return the number of attempts at writing and a success code
         """
+        self._select_channel()
         for i in range(self.max_retries):
             try:
                 if line == 1:

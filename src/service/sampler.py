@@ -14,15 +14,18 @@ class Sampler(threading.Thread):
     veml7700: VEML7700 = None
     sgp40: SGP40 = None
     database: Database = None
-    interval: int = None
+    sample_interval: int = None
+    display_interval: int = None
 
-    def __init__(self, bme280, veml7700, database, interval, sgp40):
+    def __init__(self, bme280, veml7700, sgp40, lcd_display, database, sample_interval, display_interval):
         super().__init__(daemon=True)
         self.bme280 = bme280
         self.veml7700 = veml7700
         self.sgp40 = sgp40
         self.database = database
-        self.interval = float(interval)
+        self.sample_interval = sample_interval
+        self.sample_interval = display_interval
+        self.lcd_display = lcd_display
         self.stop = threading.Event()
         self.latest_bme = None
         self.latest_veml = None
@@ -104,21 +107,26 @@ class Sampler(threading.Thread):
         """
         Run the sampler event loop
         """
-        logging.info(f"Sampler started: interval={self.interval:.3f} s")
+        logging.info(f"Sampler started: interval={self.sample_interval:.3f} s")
 
         # Start the timer and loop until we're interrupted. The loop needs to report at the specified interval
         # but sample the SGP40 at ~1s intervals to match the requirements of the Sensiron VOC algorithm
-        counter = self.interval - 1
+        capture_counter = self.sample_interval - 1
+        display_counter = self.display_interval - 1
         while not self.stop.is_set():
             try:
                 # Increment the reporting counter
-                counter += 1
-                capture_readings = counter == self.interval
+                capture_counter += 1
+                capture_readings = capture_counter == self.sample_interval
+
+                # Increment the display counter
+                display_counter += 1
+                display_next_reading = display_counter == self.display_interval
 
                 # If we've reached the capture interval, capture sensors other than the SGP40
                 if capture_readings:
                     # Reset the reporting counter
-                    counter = 0
+                    capture_counter = 0
 
                     # Purge old data and snapshot sizes
                     self.database.purge()
@@ -145,6 +153,11 @@ class Sampler(threading.Thread):
                     # and temperature compensation 
                     timestamp, sraw, voc_index, voc_label, voc_rating = self._sample_sgp_sensors(humidity, temperature, capture_readings)
                     self._set_latest_sgp(timestamp, sraw, voc_index, voc_label, voc_rating)
+
+                # If we've reached the display interval, display the next reading
+                if display_next_reading:
+                    display_counter = 0
+                    self.lcd_display.display_next(self)
 
             except Exception as ex:
                 logging.warning("Sampler error: %s", ex)
