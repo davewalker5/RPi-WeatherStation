@@ -7,11 +7,13 @@ class BME280(BME280Compensation):
         super().__init__(bus, address, mux_address, channel)
 
         # Configure: humidity x1; temp/press x1; normal mode
+        self._select_channel()
         self._write_u8(0xF2, 0x01)
         self._write_u8(0xF4, 0x27)
         time.sleep(0.1)
 
     def read(self):
+        self._select_channel()
         data = self.sm_bus.read_i2c_block_data(self.address, 0xF7, 8)
         adc_p = (data[0] << 12) | (data[1] << 4) | (data[2] >> 4)
         adc_t = (data[3] << 12) | (data[4] << 4) | (data[5] >> 4)
