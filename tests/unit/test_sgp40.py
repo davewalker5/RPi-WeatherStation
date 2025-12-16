@@ -12,7 +12,7 @@ def construct_wrapper(voc_algorithm=None, read_bytes=None):
     call will receive them as [MSB, LSB, CRC]
     """
     bus = MockSMBus(None, None, read_bytes)
-    i2c_dev = I2CDevice(bus, MockSMBus.SGP40_ADDRESS, MockI2CMsg())
+    i2c_dev = I2CDevice(bus, MockSMBus.SGP40_ADDRESS, None, None, MockI2CMsg())
     wrapper = SGP40(i2c_dev, voc_algorithm=voc_algorithm, measurement_delay=0.0)
     return wrapper, bus
 

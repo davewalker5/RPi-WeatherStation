@@ -54,9 +54,9 @@ def main():
     signal.signal(signal.SIGTERM, _sig_handler)
 
     # Create the wrapper to query the BME280
-    mux_addr = int(args.mux_addr, 16) if (args.mux_addr.strip()) else None
     bus = SMBus(args.bus)
     addr = int(args.bme_addr, 16)
+    mux_addr = int(args.mux_addr, 16) if (args.mux_addr.strip()) else None
     channel = int(args.bme_channel, 16) if (args.bme_channel.strip()) else None
     if not i2c_device_present(bus, addr, mux_addr, channel, False):
         ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"

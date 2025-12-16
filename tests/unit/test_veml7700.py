@@ -22,7 +22,7 @@ REG_WHITE = 0x05
 def test_veml7700_wrapper_normal_range(fixture):
     bus = MockSMBus(None, { REG_ALS: fixture["als_bytes"], REG_WHITE: fixture["white_bytes"]}, None)
     i2c_msg = MockI2CMsg()
-    device = I2CDevice(bus, MockSMBus.VEML7700_ADDRESS, i2c_msg)
+    device = I2CDevice(bus, MockSMBus.VEML7700_ADDRESS, None, None, i2c_msg)
     sensor = VEML7700(i2c_device=device, gain=0.25, integration_time_ms=100)
 
     als, white, lux = sensor.read()
