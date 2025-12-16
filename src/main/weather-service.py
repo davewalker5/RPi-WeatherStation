@@ -63,13 +63,13 @@ def main():
     # Create the wrapper to query the BME280
     bme_addr = int(args.bme_addr, 16)
     bme_channel = int(args.bme_channel, 16) if (args.bme_channel.strip()) else None
-    bme280 = None #BME280(bus, bme_addr, mux_addr, bme_channel) if i2c_device_present(bus, bme_addr, mux_addr, bme_channel, False) else None
+    bme280 = BME280(bus, bme_addr, mux_addr, bme_channel) if i2c_device_present(bus, bme_addr, mux_addr, bme_channel, False) else None
 
     # Create the wrapper to query the VEML770
     veml_addr = int(args.veml_addr, 16)
     veml_channel = int(args.veml_channel, 16) if (args.veml_channel.strip()) else None
     i2c_device = I2CDevice(bus, veml_addr, mux_addr, veml_channel, i2c_msg)
-    veml7700 = None #VEML7700(i2c_device, args.veml_gain, args.veml_integration_ms) if i2c_device_present(bus, veml_addr, mux_addr, veml_channel, False) else None
+    veml7700 = VEML7700(i2c_device, args.veml_gain, args.veml_integration_ms) if i2c_device_present(bus, veml_addr, mux_addr, veml_channel, False) else None
 
     # Create the wrapper to query the SGP40
     sgp_addr = int(args.sgp_addr, 16)
