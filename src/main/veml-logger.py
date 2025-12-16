@@ -4,10 +4,8 @@ import time
 import sys
 import os
 import datetime as dt
-from sensors import VEML7700
-from db import Database
+from registry import AppSettings, DeviceFactory, DeviceType
 from smbus2 import SMBus, i2c_msg
-from i2c import I2CDevice, i2c_device_present
 
 
 STOP = False
@@ -33,14 +31,6 @@ def sample_sensors(sensor, database):
 def main():
     ap = argparse.ArgumentParser(description="VEML7700 to SQLite and Console Logger")
     ap.add_argument("--db", default="weather.db", help="SQLite database path")
-    ap.add_argument("--retention", type=int, default=0, help="Data retention period (minutes)")
-    ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
-    ap.add_argument("--bus", type=int, default=0, help="I2C bus number")
-    ap.add_argument("--mux-addr", default="0x70", help="Multiplexer address")
-    ap.add_argument("--veml-addr", default="0x10", help="VEML7700 I2C address")
-    ap.add_argument("--veml-channel", default="6", help="VEML7700 multiplexer channel")
-    ap.add_argument("--veml-gain", type=float, default=0.25, help="Gain (light sensor sensitivity)")
-    ap.add_argument("--veml-integration-ms", type=int, default=100, help="Integration time (light collection time to produce a reading), ms")
     ap.add_argument("--once", action="store_true", help="Take one reading and exit")
     args = ap.parse_args()
 
@@ -56,21 +46,19 @@ def main():
     # Install signal handlers for graceful stop
     signal.signal(signal.SIGTERM, _sig_handler)
 
-    # Create the wrapper to query the BME280
-    bus = SMBus(args.bus)
-    addr = int(args.veml_addr, 16)
-    mux_addr = int(args.mux_addr, 16) if (args.mux_addr.strip()) else None
-    channel = int(args.veml_channel, 16) if (args.veml_channel.strip()) else None
-    if not i2c_device_present(bus, addr, mux_addr, channel, False):
+    # Load the configuration settings and construct the sensor wrapper
+    settings = AppSettings(AppSettings.default_settings_file())
+    bus = SMBus(settings.settings["bus_number"])
+    factory = DeviceFactory(bus, i2c_msg, None, settings)
+    sensor = factory.create_device(DeviceType.VEML7700)
+    if not sensor:
         ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-        print(f"{ts}  I2C error: No device found at address {args.veml_addr}", file=sys.stderr)
+        print(f"{ts} Error: VEML7700 not detected", file=sys.stderr)
         bus.close()
         return
-    i2c_device = I2CDevice(bus, addr, mux_addr, channel, i2c_msg)
-    sensor = VEML7700(i2c_device, args.veml_gain, args.veml_integration_ms)
 
     # Create the database access wrapper
-    database = Database(args.db, args.retention, args.bus, None, args.veml_addr, args.veml_gain, args.veml_integration_ms, None)
+    database = factory.create_database(args.db)
     database.create_database()
 
     # If one-shot has been specified, sample the sensor, display the results and exit
@@ -93,10 +81,10 @@ def main():
                 sample_sensors(sensor, database)
             except OSError as ex:
                 ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-                print(f"{ts}  I2C error: {ex}; retrying in {args.interval}s", file=sys.stderr)
+                print(f"{ts} Error: {ex}", file=sys.stderr)
 
             # Wait for the specified interval
-            next_t += args.interval
+            next_t += settings.settings["sample_interval"]
             delay = max(0.0, next_t - time.monotonic())
             time.sleep(delay)
     
