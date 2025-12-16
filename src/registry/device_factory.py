@@ -42,12 +42,12 @@ class DeviceFactory:
         channel = properties["channel"]
 
         # Check the device is attached
-        if i2c_device_present(self.bus, address, mux_address, channel, False):
+        device = None
+        if i2c_device_present(self.bus, address, mux_address, channel, properties["use_write_quick"]):
             # Identify the method used to create an instance of the wrapper for this device and call it
             instantiator = getattr(self, f"_create_{name.lower()}")
-            device = instantiator(mux_address, address, channel, properties)
-        else:
-            device = None
+            if instantiator:
+                device = instantiator(mux_address, address, channel, properties)
 
         # Return the device instance
         return device
