@@ -1,5 +1,5 @@
 import time
-from os import environ
+from os import environ, getenv
 import datetime as dt
 from sensors import SGP40
 from smbus2 import SMBus, i2c_msg
@@ -10,7 +10,9 @@ from sensirion_gas_index_algorithm.voc_algorithm import VocAlgorithm
 def main():
     bus = SMBus(int(environ["BUS_NUMBER"]))
     addr = int(environ["SGP_ADDR"], 16)
-    i2c_device = I2CDevice(bus, addr, i2c_msg)
+    mux_addr = int(mux_addr, 16) if (mux_addr:= getenv("MUX_ADDR", "").strip()) else None
+    channel = int(channel) if (channel:= getenv("SGP_CHANNEL", "").strip()) else None
+    i2c_device = I2CDevice(bus, addr, mux_addr, channel, i2c_msg)
     sensor = SGP40(i2c_device, VocAlgorithm() )
 
     try:

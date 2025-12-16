@@ -1,9 +1,11 @@
 from smbus2 import SMBus, i2c_msg
 import time
-from os import environ
+from os import environ, getenv
 
+mux_addr = int(mux_addr, 16) if (mux_addr:= getenv("MUX_ADDR", "").strip()) else None
 bus_num = int(environ["BUS_NUMBER"])
 addr = int(environ["SGP_ADDR"], 16)
+channel = int(channel) if (channel:= getenv("SGP_CHANNEL", "").strip()) else None
 
 print(f"Bus = {bus_num}, Address = {addr} (0x{addr:02X})")
 
@@ -16,6 +18,10 @@ CMD_MEASURE_RAW = [
 
 with SMBus(bus_num) as bus:
     try:
+        # Select the channel
+        if mux_addr and channel:
+            bus.write_byte(mux_addr, 1 << channel)
+
         # Send full command
         write = i2c_msg.write(addr, CMD_MEASURE_RAW)
         bus.i2c_rdwr(write)

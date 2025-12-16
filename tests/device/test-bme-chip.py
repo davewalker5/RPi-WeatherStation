@@ -7,7 +7,7 @@ addr = int(environ["BME_ADDR"], 16)
 channel = int(channel) if (channel:= getenv("BME_CHANNEL", "").strip()) else None
 
 bus = SMBus(bus_num)
-if mux_addr:
+if mux_addr and channel:
     bus.write_byte(mux_addr, 1 << channel)
 chip_id = bus.read_byte_data(addr, 0xD0)
 print("BME280 chip ID:", hex(chip_id))

@@ -1,5 +1,5 @@
 import time
-from os import environ
+from os import environ, getenv
 import datetime as dt
 from smbus2 import SMBus, i2c_msg
 from sensirion_gas_index_algorithm.voc_algorithm import VocAlgorithm
@@ -21,7 +21,7 @@ def _crc8_sgp40(two_bytes: bytes) -> int:
     return crc
 
 
-def read_sgp40_sraw(bus: SMBus, addr: int = 0x59) -> int:
+def read_sgp40_sraw(bus: SMBus, addr: int = 0x59, mux_addr: int = 0x70, channel: int = 7) -> int:
     """
     Read one SRAW VOC sample from SGP40.
     Returns the raw value (0..65535) or None on error/CRC failure.
@@ -32,6 +32,10 @@ def read_sgp40_sraw(bus: SMBus, addr: int = 0x59) -> int:
         0x80, 0x00, 0xA2,  # RH = 50%, CRC
         0x66, 0x66, 0x93   # T = 25°C, CRC
     ]
+
+    # Select the channel
+    if mux_addr and channel:
+        bus.write_byte(mux_addr, 1 << channel)
 
     # Send command
     write = i2c_msg.write(addr, cmd)
@@ -72,14 +76,16 @@ def classify_voc_index(index: int) -> str:
 def main():
     bus_num = int(environ["BUS_NUMBER"])
     addr = int(environ["SGP_ADDR"], 16)
+    mux_addr = int(mux_addr, 16) if (mux_addr:= getenv("MUX_ADDR", "").strip()) else None
+    channel = int(channel) if (channel:= getenv("SGP_CHANNEL", "").strip()) else None
 
-    print(f"Bus = {bus_num}, Address = {addr} (0x{addr:02X})")
+    print(f"Bus = {bus_num}, Address = {addr} (0x{addr:02X}), MUX Address = {mux_addr}, Channel = {channel}")
 
     voc_algo = VocAlgorithm()  # official Sensirion VOC index algorithm
 
     with SMBus(bus_num) as bus:
         while True:
-            sraw = read_sgp40_sraw(bus, addr)
+            sraw = read_sgp40_sraw(bus, addr, mux_addr, channel)
             if sraw is None:
                 print("Failed to read SGP40 sample (CRC or I2C error)")
                 time.sleep(1)
