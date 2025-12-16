@@ -13,7 +13,7 @@ E_DELAY = 0.0005
 
 
 class I2CLCD:
-    def __init__(self, bus, addr, backlight=True, max_retries=3):
+    def __init__(self, bus, addr, mux_addr, channel, backlight=True, max_retries=3):
         """
         bus: Mock or real SMBus()
         addr: I2C address of the LCD
@@ -22,6 +22,8 @@ class I2CLCD:
         """
         self.bus = bus
         self.addr = addr
+        self.mux_addr = mux_addr
+        self.channel = channel
         self.backlight = backlight
         self.max_retries = max_retries
 
@@ -51,6 +53,7 @@ class I2CLCD:
         Force a write so the LCD output updates immediately
         """
         try:
+            self._select_channel()
             self.bus.write_byte(self.addr, self._bl_bit())
         except OSError:
             pass
@@ -58,14 +61,19 @@ class I2CLCD:
     # -------------------------------
     # Low level I2C helpers
     # -------------------------------
+    def _select_channel(self):
+        if self.mux_addr and self.channel:
+            self.bus.write_byte(self.mux_addr, 1 << self.channel)
 
     def _lcd_strobe(self, data):
         """
         Toggle the enable bit (E) to prompt the LCD display to read the data lines
         and update the display
         """
+        self._select_channel()
         self.bus.write_byte(self.addr, data | ENABLE)
         sleep(E_PULSE)
+        self._select_channel()
         self.bus.write_byte(self.addr, data & ~ENABLE)
         sleep(E_DELAY)
 
@@ -89,10 +97,12 @@ class I2CLCD:
         low = mode | ((bits << 4) & 0xF0) | bl
 
         # Write the high nibble
+        self._select_channel()
         self.bus.write_byte(self.addr, high)
         self._lcd_strobe(high)
 
         # Write the low nibble
+        self._select_channel()
         self.bus.write_byte(self.addr, low)
         self._lcd_strobe(low)
 

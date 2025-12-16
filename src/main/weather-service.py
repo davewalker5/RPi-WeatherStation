@@ -36,6 +36,7 @@ def main():
     ap.add_argument("--sgp-addr", default="59", help="SPG40 I2C address")
     ap.add_argument("--sgp-channel", default="7", help="SGP40 multiplexer channel")
     ap.add_argument("--lcd-addr", default="0x27", help="LCD display address")
+    ap.add_argument("--lcd-channel", default="4", help="LCD multiplexer channel")
     ap.add_argument("--db", default=None, help="optional SQLite path to enable /api/last")
     ap.add_argument("--sample-interval", type=float, default=60.0, help="Sample interval seconds")
     ap.add_argument("--display-interval", type=float, default=5.0, help="Display interval seconds")
@@ -87,7 +88,8 @@ def main():
     # Create and start the LCD display handler
     if not args.no_lcd:
         lcd_addr = int(args.lcd_addr, 16)
-        if i2c_device_present(bus, lcd_addr, False):
+        lcd_channel = int(args.lcd_channel, 16) if (args.lcd_channel.strip()) else None
+        if i2c_device_present(bus, lcd_addr, mux_addr, lcd_channel, False):
             lcd = I2CLCD(bus, lcd_addr)
             display = LCDDisplay(lcd, sampler, args.display_interval)
             display.start()
