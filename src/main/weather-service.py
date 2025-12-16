@@ -41,7 +41,7 @@ def main():
     settings = AppSettings(AppSettings.default_settings_file())
     bus = SMBus(settings.settings["bus_number"])
     factory = DeviceFactory(bus, i2c_msg, VocAlgorithm(), settings)
-    bme280 = factory.create_device(DeviceType.SGP40)
+    bme280 = factory.create_device(DeviceType.BME280)
     veml7700 = factory.create_device(DeviceType.VEML7700)
     sgp40 = factory.create_device(DeviceType.SGP40)
 
