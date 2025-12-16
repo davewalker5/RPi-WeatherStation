@@ -3,7 +3,7 @@ from registry import AppSettings
 
 # Load the configuration settings and extract the communication properties
 settings = AppSettings(AppSettings.default_settings_file())
-mux_address = settings.devices["MUX"]["address"]
+mux_address = int(settings.devices["MUX"]["address"], 16)
 bme_address = int(settings.devices["BME280"]["address"], 16)
 bme_channel = settings.devices["BME280"]["channel"]
 
