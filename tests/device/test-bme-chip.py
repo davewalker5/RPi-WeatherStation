@@ -4,7 +4,7 @@ from registry import AppSettings
 # Load the configuration settings and extract the communication properties
 settings = AppSettings(AppSettings.default_settings_file())
 mux_address = settings.devices["MUX"]["address"]
-bme_address = settings.devices["BME280"]["address"]
+bme_address = int(settings.devices["BME280"]["address"], 16)
 bme_channel = settings.devices["BME280"]["channel"]
 
 # Create the SMBus instance
