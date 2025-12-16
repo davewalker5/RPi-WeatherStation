@@ -3,8 +3,8 @@ from .bme280_compensation import BME280Compensation
 
 
 class BME280(BME280Compensation):
-    def __init__(self, bus, address):
-        super().__init__(bus, address)
+    def __init__(self, bus, address, mux_address, channel):
+        super().__init__(bus, address, mux_address, channel)
 
         # Configure: humidity x1; temp/press x1; normal mode
         self._write_u8(0xF2, 0x01)

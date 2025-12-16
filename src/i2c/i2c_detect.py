@@ -1,10 +1,14 @@
-def i2c_device_present(bus, addr, use_write_quick) -> bool:
+def i2c_device_present(bus, addr, mux_addr, channel, use_write_quick) -> bool:
     """
     Return True if a device at `addr` ACKs on the I2C bus, False otherwise
     """
+    # Select the channel
+    if mux_addr and channel:
+        bus.write_byte(mux_addr, 1 << channel)
+
     try:
         if use_write_quick:
-            # Perform a quick transaction to see if the device is there 
+            # Perform a quick transaction to see if the device is there
             bus.write_quick(addr)
         else:
             # Read and discard one byte

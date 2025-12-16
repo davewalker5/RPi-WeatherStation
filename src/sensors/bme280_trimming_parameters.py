@@ -25,10 +25,13 @@ REG_E6 = 0xE6
 
 
 class BME280TrimmingParameters:
-    def __init__(self, sm_bus, address):
+    def __init__(self, sm_bus, address, mux_address, channel):
         self.sm_bus = sm_bus
         self.address = address
+        self.mux_address = mux_address
+        self.channel = channel
 
+        self._select_channel()
         e4 = self._read_s8(DIG_H4)
         e5 = self._read_u8(DIG_H5)
         e6 = self._read_s8(REG_E6)
@@ -58,25 +61,34 @@ class BME280TrimmingParameters:
         }
 
     # ---- I2C helpers
+    def _select_channel(self):
+        if self.mux_address and self.channel:
+            self.sm_bus.write_byte(self.mux_address, 1 << self.channel)
+
     def _read_u8(self, reg):
+        self._select_channel()
         return self.sm_bus.read_byte_data(self.address, reg)
 
     def _read_s8(self, reg):
+        self._select_channel()
         v = self._read_u8(reg)
         return v - 256 if v > 127 else v
 
     def _read_u16(self, reg):
+        self._select_channel()
         lo = self._read_u8(reg)
         hi = self._read_u8(reg + 1)
         return (hi << 8) | lo
 
     def _read_s16(self, reg):
+        self._select_channel()
         lo = self._read_u8(reg)
         hi = self._read_u8(reg + 1)
         val = (hi << 8) | lo
         return val - 65536 if val > 32767 else val
 
     def _write_u8(self, reg, val):
+        self._select_channel()
         self.sm_bus.write_byte_data(self.address, reg, val)
 
     def get_trimming_parameter(self, reg):
