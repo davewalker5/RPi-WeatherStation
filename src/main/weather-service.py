@@ -90,7 +90,7 @@ def main():
         lcd_addr = int(args.lcd_addr, 16)
         lcd_channel = int(args.lcd_channel, 16) if (args.lcd_channel.strip()) else None
         if i2c_device_present(bus, lcd_addr, mux_addr, lcd_channel, False):
-            lcd = I2CLCD(bus, lcd_addr)
+            lcd = I2CLCD(bus, lcd_addr, mux_addr, lcd_channel)
             display = LCDDisplay(lcd, sampler, args.display_interval)
             display.start()
 
