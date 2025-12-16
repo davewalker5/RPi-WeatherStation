@@ -24,7 +24,7 @@ class Sampler(threading.Thread):
         self.sgp40 = sgp40
         self.database = database
         self.sample_interval = sample_interval
-        self.sample_interval = display_interval
+        self.display_interval = display_interval
         self.lcd_display = lcd_display
         self.stop = threading.Event()
         self.latest_bme = None
