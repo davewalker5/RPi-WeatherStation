@@ -16,7 +16,7 @@ class I2CDevice:
 
     def _select_channel(self):
         if self.mux_addr and self.channel:
-            self.sm_bus.write_byte(self.mux_addr, 1 << self.channel)
+            self.bus.write_byte(self.mux_addr, 1 << self.channel)
 
     def write_u16(self, register: int, value: int):
         """
