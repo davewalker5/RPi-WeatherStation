@@ -68,14 +68,20 @@ def main():
     # Create the wrapper to query the VEML770
     veml_addr = int(args.veml_addr, 16)
     veml_channel = int(args.veml_channel, 16) if (args.veml_channel.strip()) else None
-    i2c_device = I2CDevice(bus, veml_addr, mux_addr, veml_channel, i2c_msg)
-    veml7700 = VEML7700(i2c_device, args.veml_gain, args.veml_integration_ms) if i2c_device_present(bus, veml_addr, mux_addr, veml_channel, False) else None
+    if i2c_device_present(bus, veml_addr, mux_addr, veml_channel, False):
+        veml_i2c_device = I2CDevice(bus, veml_addr, mux_addr, veml_channel, i2c_msg)
+        veml7700 = VEML7700(veml_i2c_device, args.veml_gain, args.veml_integration_ms)
+    else:
+        veml7700 = None
 
     # Create the wrapper to query the SGP40
     sgp_addr = int(args.sgp_addr, 16)
     sgp_channel = int(args.sgp_channel, 16) if (args.sgp_channel.strip()) else None
-    i2c_device = I2CDevice(bus, sgp_addr, mux_addr, sgp_channel, i2c_msg)
-    sgp40 = SGP40(i2c_device, VocAlgorithm()) if i2c_device_present(bus, sgp_addr, mux_addr, sgp_channel, True) else None
+    if i2c_device_present(bus, sgp_addr, mux_addr, sgp_channel, True):
+        sgp_i2c_device = I2CDevice(bus, sgp_addr, mux_addr, sgp_channel, i2c_msg)
+        sgp40 = SGP40(sgp_i2c_device, VocAlgorithm())
+    else:
+        sgp40 = None
 
     # Create the database access wrapper
     database = Database(args.db, args.retention, args.bus, args.bme_addr, args.veml_addr, args.veml_gain, args.veml_integration_ms, args.sgp_addr)
