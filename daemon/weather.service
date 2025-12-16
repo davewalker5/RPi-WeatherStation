@@ -11,12 +11,17 @@ ExecStart=/usr/bin/python3 -m main.weather-service \
   --db ${DB_PATH} \
   --retention ${RETENTION} \
   --bus ${BUS} \
+  --mux-addr ${MUX_ADDR} \
   --bme-addr ${BME_ADDR} \
+  --bme-channel ${BME_CHANNEL} \
   --veml-addr ${VEML_ADDR} \
+  --veml-channel ${VEML_CHANNEL} \
   --veml-gain ${VEML_GAIN} \
   --veml-integration-ms ${VEML_INTEGRATION_TIME} \
   --sgp-addr ${SGP_ADDR} \
+  --sgp-channel ${SGP_CHANNEL} \
   --lcd-addr ${LCD_ADDR} \
+  --lcd-channel ${LCD_CHANNEL} \
   --sample-interval ${SAMPLE_INTERVAL} \
   --display-interval ${DISPLAY_INTERVAL} \
   --host ${HOST} \
