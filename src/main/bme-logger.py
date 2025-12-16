@@ -37,7 +37,7 @@ def main():
     ap.add_argument("--bus", type=int, default=1, help="I2C bus number")
     ap.add_argument("--mux-addr", default="0x70", help="Multiplexer address")
     ap.add_argument("--bme-addr", default="0x76", help="BME280 I2C address")
-    ap.add_argument("--bme-channel", default="5", help="Multiplexer channel")
+    ap.add_argument("--bme-channel", default="5", help="BME280 multiplexer channel")
     ap.add_argument("--once", action="store_true", help="Take one reading and exit")
     args = ap.parse_args()
 
