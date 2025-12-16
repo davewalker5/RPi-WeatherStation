@@ -4,9 +4,8 @@ import time
 import sys
 import os
 import datetime as dt
-from sensors import BME280
+from registry import AppSettings, DeviceFactory, DeviceType
 from db import Database
-from i2c import i2c_device_present
 from smbus2 import SMBus
 
 
@@ -32,12 +31,6 @@ def sample_sensors(sensor, database):
 def main():
     ap = argparse.ArgumentParser(description="BME280 to SQLite and Console Logger")
     ap.add_argument("--db", default="weather.db", help="SQLite database path")
-    ap.add_argument("--retention", type=int, default=0, help="Data retention period (minutes)")
-    ap.add_argument("--interval", type=float, default=60.0, help="Sample interval seconds")
-    ap.add_argument("--bus", type=int, default=1, help="I2C bus number")
-    ap.add_argument("--mux-addr", default="0x70", help="Multiplexer address")
-    ap.add_argument("--bme-addr", default="0x76", help="BME280 I2C address")
-    ap.add_argument("--bme-channel", default="5", help="BME280 multiplexer channel")
     ap.add_argument("--once", action="store_true", help="Take one reading and exit")
     args = ap.parse_args()
 
@@ -53,20 +46,19 @@ def main():
     # Install signal handlers for graceful stop
     signal.signal(signal.SIGTERM, _sig_handler)
 
-    # Create the wrapper to query the BME280
-    bus = SMBus(args.bus)
-    addr = int(args.bme_addr, 16)
-    mux_addr = int(args.mux_addr, 16) if (args.mux_addr.strip()) else None
-    channel = int(args.bme_channel, 16) if (args.bme_channel.strip()) else None
-    if not i2c_device_present(bus, addr, mux_addr, channel, False):
+    # Load the configuration settings and construct the sensor wrapper
+    settings = AppSettings(AppSettings.default_settings_file())
+    bus = SMBus(settings.settings["bus_number"])
+    factory = DeviceFactory(bus, None, None, settings)
+    sensor = factory.create_device(DeviceType.BME280)
+    if not sensor:
         ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-        print(f"{ts}  I2C error: No device found at address {args.bme_addr}", file=sys.stderr)
+        print(f"{ts} Error: BME280 not detected", file=sys.stderr)
         bus.close()
         return
-    sensor = BME280(bus, addr, mux_addr, channel)
 
     # Create the database access wrapper
-    database = Database(args.db, args.retention, args.bus, args.bme_addr, None, None, None, None)
+    database = factory.create_database(args.db)
     database.create_database()
 
     # If one-shot has been specified, sample the sensor, display the results and exit
@@ -89,10 +81,10 @@ def main():
                 sample_sensors(sensor, database)
             except OSError as ex:
                 ts = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-                print(f"{ts}  I2C error: {ex}; retrying in {args.interval}s", file=sys.stderr)
+                print(f"{ts} Error: {ex}", file=sys.stderr)
 
             # Wait for the specified interval
-            next_t += args.interval
+            next_t += settings.settings["sample_interval"]
             delay = max(0.0, next_t - time.monotonic())
             time.sleep(delay)
     

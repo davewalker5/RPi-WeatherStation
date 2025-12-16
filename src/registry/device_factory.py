@@ -1,5 +1,8 @@
 from i2c import i2c_device_present, I2CDevice, I2CLCD
 from sensors import BME280, VEML7700, SGP40
+from db import Database
+from .device_type import DeviceType
+
 
 class DeviceFactory:
     def __init__(self, bus, msg_module, voc_algorithm, app_settings):
@@ -48,4 +51,18 @@ class DeviceFactory:
 
         # Return the device instance
         return device
+
+    def create_database(self, database_path):
+        # Extract the database and persistence properties from the settings
+        retention = self.app_settings.settings["retention"]
+        bus_number = self.app_settings.settings["bus_number"]
+        bme_address = self.app_settings.devices[DeviceType.BME280]["address"]
+        veml_address = self.app_settings.devices[DeviceType.VEML7700]["address"]
+        veml_gain = self.app_settings.devices[DeviceType.VEML7700]["gain"]
+        veml_it = self.app_settings.devices[DeviceType.VEML7700]["integration_time"]
+        sgp_address = self.app_settings.devices[DeviceType.VEML7700]["address"]
+
+        # Create the database wrapper
+        database = Database(database_path, retention, bus_number, bme_address, veml_address, veml_gain, veml_it, sgp_address)
+        return database
 

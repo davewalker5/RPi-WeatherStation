@@ -1,6 +1,6 @@
 import time
 import datetime as dt
-from registry import AppSettings, DeviceFactory
+from registry import AppSettings, DeviceFactory, DeviceType
 from smbus2 import SMBus
 
 
@@ -9,7 +9,7 @@ def main():
     settings = AppSettings(AppSettings.default_settings_file())
     bus = SMBus(settings.settings["bus_number"])
     factory = DeviceFactory(bus, None, None, settings)
-    sensor = factory.create_device("BME280")
+    sensor = factory.create_device(DeviceType.BME280)
 
     try:
         while True:

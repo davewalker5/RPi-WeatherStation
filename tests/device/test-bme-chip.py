@@ -1,11 +1,11 @@
 from smbus2 import SMBus
-from registry import AppSettings
+from registry import AppSettings, DeviceType
 
 # Load the configuration settings and extract the communication properties
 settings = AppSettings(AppSettings.default_settings_file())
-mux_address = int(settings.devices["MUX"]["address"], 16)
-bme_address = int(settings.devices["BME280"]["address"], 16)
-bme_channel = settings.devices["BME280"]["channel"]
+mux_address = int(settings.devices[DeviceType.MUX]["address"], 16)
+bme_address = int(settings.devices[DeviceType.BME280]["address"], 16)
+bme_channel = settings.devices[DeviceType.BME280]["channel"]
 
 # Create the SMBus instance
 bus = SMBus(settings.settings["bus_number"])

@@ -1,5 +1,5 @@
 import pytest
-from registry import AppSettings, DeviceFactory
+from registry import AppSettings, DeviceFactory, DeviceType
 from helpers import MockSMBus, BME280_TRIMMING_PARAMETERS
 
 
@@ -90,7 +90,7 @@ def test_bme280_wrapper(fixture):
     settings = AppSettings(AppSettings.default_settings_file())
     bus = MockSMBus(BME280_TRIMMING_PARAMETERS, fixture["block"], None)
     factory = DeviceFactory(bus, None, None, settings)
-    sensor = factory.create_device("BME280")
+    sensor = factory.create_device(DeviceType.BME280)
 
     T, P, H = sensor.read()
 
