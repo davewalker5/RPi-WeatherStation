@@ -56,14 +56,19 @@ def main():
     database.create_database()
 
     # Create and start the sampler
-    sampler = Sampler(bme280, veml7700, sgp40, display, database, settings.settings["sample_interval"], settings.settings["display_interval"])
+    sample_interval = settings.settings["sample_interval"]
+    display_interval = settings.settings["display_interval"]
+    sampler = Sampler(bme280, veml7700, sgp40, display, database, sample_interval, display_interval)
     sampler.start()
 
     # Set up the request handler
     RequestHandler.sampler = sampler
 
     # Create the server
-    server = ThreadingHTTPServer((settings.settings["hostname"], settings.settings["port"]), RequestHandler)
+    hostname = settings.settings["hostname"]
+    port = settings.settings["port"]
+    print(f"Starting the server on http://{hostname}:{port}")
+    server = ThreadingHTTPServer((hostname, port), RequestHandler)
     global stop
     stop = threading.Event()
 
