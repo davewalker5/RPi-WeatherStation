@@ -63,7 +63,7 @@ def main():
     RequestHandler.sampler = sampler
 
     # Create the server
-    server = ThreadingHTTPServer((args.host, args.port), RequestHandler)
+    server = ThreadingHTTPServer((settings.settings["hostname"], settings.settings["port"]), RequestHandler)
     global stop
     stop = threading.Event()
 
