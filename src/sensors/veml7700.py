@@ -1,5 +1,5 @@
 import time
-
+from decimal import Decimal
 
 class VEML7700:
     """
@@ -42,7 +42,7 @@ class VEML7700:
     }
 
     # Allowed gain/IT values for auto-ranging (sorted low→high)
-    _ALLOWED_GAINS = [0.125, 0.25, 1.0, 2.0]
+    _ALLOWED_GAINS = [Decimal("0.125"), Decimal("0.25"), Decimal("1.0"), Decimal("2.0")]
     _ALLOWED_IT    = [25, 50, 100, 200, 400, 800]  # ms
 
     # Baseline resolution used for scaling (gain=1/4, IT=100ms)
@@ -61,11 +61,11 @@ class VEML7700:
         self.i2c_device = i2c_device
 
         # Normalise / coerce types
-        gain = float(gain)
-        it   = int(integration_time_ms)
+        gain_d = Decimal(gain)
+        it = int(integration_time_ms)
 
         # Snap to nearest allowed gain/IT (so auto-ranging works cleanly)
-        self.gain = min(self._ALLOWED_GAINS, key=lambda g: abs(g - gain))
+        self.gain = float(min(self._ALLOWED_GAINS, key=lambda g: abs(g - gain_d)))
         self.integration_time_ms = min(self._ALLOWED_IT, key=lambda t: abs(t - it))
 
         # Configure sensor & compute resolution
