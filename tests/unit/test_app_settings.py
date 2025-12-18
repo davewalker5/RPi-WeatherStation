@@ -7,7 +7,7 @@ def test_general_settings():
     assert 1 == settings.settings["bus_number"]
     assert 5 == settings.settings["display_interval"]
     assert "0.0.0.0" == settings.settings["hostname"]
-    assert 80 == settings.settings["port"]
+    assert 8080 == settings.settings["port"]
     assert 60 == settings.settings["sample_interval"]
 
 def test_device_settings():
