@@ -237,8 +237,9 @@ class Sampler(threading.Thread):
 
                 # If we've reached the display interval, display the next reading
                 if display_next_reading and self.lcd_enabled:
-                    display_counter = 0
-                    self.lcd_display.display_next(self)
+                    with self._lock:
+                        display_counter = 0
+                        self.lcd_display.display_next(self)
 
             except Exception as ex:
                 logging.warning("Sampler error: %s", ex)
