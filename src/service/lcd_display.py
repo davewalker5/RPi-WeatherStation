@@ -1,4 +1,3 @@
-
 import logging
 import datetime
 import threading
@@ -33,9 +32,11 @@ class LCDDisplay:
             text = f"{label} = {values[member]}{units}" if values else f"No {label} reading"
 
             # Display the timestamp and reading
-            self.lcd.clear()
-            self.lcd.write(datetime.datetime.now().strftime('%H:%M:%S'), line=1)
-            self.lcd.write(text, line=2)
+            with self.lock:
+                if self.enabled:
+                    self.lcd.clear()
+                    self.lcd.write(datetime.datetime.now().strftime('%H:%M:%S'), line=1)
+                    self.lcd.write(text, line=2)
 
         return have_reading
 
@@ -68,33 +69,30 @@ class LCDDisplay:
         if not self.enabled:
             return
 
-        with self.lock:
-            try:
-                # Loop until we've found and displayed a reading for a sensor
-                sensor_counter = 0
-                while True:
-                    # Count the passes through this loop and break out if we've tried them all and there's
-                    # nothing there
-                    sensor_counter = sensor_counter + 1
-                    if sensor_counter >= len(self.functions):
-                        break
+        try:
+            # Loop until we've found and displayed a reading for a sensor
+            sensor_counter = 0
+            while True:
+                # Count the passes through this loop and break out if we've tried them all and there's
+                # nothing there
+                sensor_counter = sensor_counter + 1
+                if sensor_counter >= len(self.functions):
+                    break
 
-                    # Try to display the reading for the sensor at the current index
-                    with self.lock:
-                        if self.enabled:
-                            have_reading = self.functions[self.index](sampler)
+                # Try to display the reading for the sensor at the current index
+                have_reading = self.functions[self.index](sampler)
 
-                    # Move on to the next index
-                    self.index = self.index + 1
-                    if self.index >= len(self.functions):
-                        self.index = 0
+                # Move on to the next index
+                self.index = self.index + 1
+                if self.index >= len(self.functions):
+                    self.index = 0
 
-                    # If we got a reading, break out
-                    if have_reading:
-                        break
+                # If we got a reading, break out
+                if have_reading:
+                    break
 
-            except Exception as ex:
-                logging.warning("Display error: %s", ex)
+        except Exception as ex:
+            logging.warning("Display error: %s", ex)
 
     def disable(self):
         self.enabled = False
