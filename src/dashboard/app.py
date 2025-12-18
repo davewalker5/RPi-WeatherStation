@@ -34,17 +34,17 @@ def current_weather():
 
     try:
         # Get the latest BME280 readings
-        resp = requests.get(f"{WEATHER_API_BASE_URL}/bme", timeout=TIMEOUT)
+        resp = requests.get(f"{WEATHER_API_BASE_URL}/bme/latest", timeout=TIMEOUT)
         resp.raise_for_status()
         bme_readings = resp.json()
 
         # Get the latest VEML7700 readings
-        resp = requests.get(f"{WEATHER_API_BASE_URL}/veml", timeout=TIMEOUT)
+        resp = requests.get(f"{WEATHER_API_BASE_URL}/veml/latest", timeout=TIMEOUT)
         resp.raise_for_status()
         veml_readings = resp.json()
 
         # Get the latest SGP40 readings
-        resp = requests.get(f"{WEATHER_API_BASE_URL}/sgp", timeout=TIMEOUT)
+        resp = requests.get(f"{WEATHER_API_BASE_URL}/sgp/latest", timeout=TIMEOUT)
         resp.raise_for_status()
         sgp_readings = resp.json()
 

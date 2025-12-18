@@ -1,6 +1,6 @@
-
 import logging
 import datetime
+import threading
 
 DEGREE = chr(223)
 
@@ -9,6 +9,8 @@ class LCDDisplay:
     def __init__(self, lcd):
         # Capture the LCD display wrappe
         self.lcd = lcd
+        self.enabled = lcd is not None
+        self.lock = threading.Lock()
 
         # Define the callback functions to display values
         self.functions = [
@@ -30,9 +32,11 @@ class LCDDisplay:
             text = f"{label} = {values[member]}{units}" if values else f"No {label} reading"
 
             # Display the timestamp and reading
-            self.lcd.clear()
-            self.lcd.write(datetime.datetime.now().strftime('%H:%M:%S'), line=1)
-            self.lcd.write(text, line=2)
+            with self.lock:
+                if self.enabled:
+                    self.lcd.clear()
+                    self.lcd.write(datetime.datetime.now().strftime('%H:%M:%S'), line=1)
+                    self.lcd.write(text, line=2)
 
         return have_reading
 
@@ -60,11 +64,21 @@ class LCDDisplay:
         """
         Show the next reading in the sequence
         """
+
+        # Do nothing if the display's not enabled
+        if not self.enabled:
+            return
+
         try:
-            # Loop until we've found and displayed a reading for a sensor. This will loop forever
-            # if there are no sensors attached but then a weather station with no sensors isn't
-            # much use!
+            # Loop until we've found and displayed a reading for a sensor
+            sensor_counter = 0
             while True:
+                # Count the passes through this loop and break out if we've tried them all and there's
+                # nothing there
+                sensor_counter = sensor_counter + 1
+                if sensor_counter >= len(self.functions):
+                    break
+
                 # Try to display the reading for the sensor at the current index
                 have_reading = self.functions[self.index](sampler)
 
@@ -79,3 +93,17 @@ class LCDDisplay:
 
         except Exception as ex:
             logging.warning("Display error: %s", ex)
+
+    def disable(self):
+        self.enabled = False
+        if self.lcd:
+            with self.lock:
+                self.lcd.clear()
+                self.lcd.backlight_off()
+
+    def enable(self):
+        if self.lcd and not self.enabled:
+            with self.lock:
+                self.enabled = True
+                self.lcd.clear()
+                self.lcd.backlight_on()

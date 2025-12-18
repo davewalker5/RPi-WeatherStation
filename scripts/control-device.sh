@@ -19,6 +19,14 @@ while [[ $# -gt 0 ]]; do
       PI_PORT="$2"
       shift 2
       ;;
+    --device)
+      DEVICE="$2"
+      shift 2
+      ;;
+    --state)
+      STATE="$2"
+      shift 2
+      ;;
     *)
       echo "Unknown option: $1"
       exit 1
@@ -27,21 +35,10 @@ while [[ $# -gt 0 ]]; do
 done
 
 
-# Define the API endpoints to be tested
-endpoints=(
-  "health"
-  "bme/latest"
-  "veml/latest"
-  "sgp/latest"
-)
+# Construct the URL
+url="http://${PI_HOSTNAME}:${PI_PORT}/api/${DEVICE}/${STATE}"
 
-# Iterate over the endpoints
-for i in "${!endpoints[@]}"; do
-    url="http://${PI_HOSTNAME}:${PI_PORT}/api/${endpoints[$i]}"
-    echo
-    echo "Calling ${url} ..."
-    curl "$url"
-    echo
-done
-
+echo
+echo "Calling ${url} ..."
+curl -X PUT "$url"
 echo
