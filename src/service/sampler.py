@@ -54,7 +54,7 @@ class Sampler(threading.Thread):
         """
         Store the latest BME280 readings
         """
-        with self.lock:
+        with self._lock:
             self.latest_bme = {
                 "time_utc": timestamp,
                 "temperature_c": round(temperature, 2),
@@ -80,7 +80,7 @@ class Sampler(threading.Thread):
         """
         Store the latest VEML7700 readings
         """
-        with self.lock:
+        with self._lock:
             self.latest_veml = {
                 "time_utc": timestamp,
                 "gain": self.veml7700.gain,
@@ -111,7 +111,7 @@ class Sampler(threading.Thread):
         """
         Store the latest SGP40 readings
         """
-        with self.lock:
+        with self._lock:
             self.latest_sgp = {
                 "time_utc": timestamp,
                 "sraw": sraw,
@@ -219,7 +219,7 @@ class Sampler(threading.Thread):
             self.sgp40_enabled = self.sgp40 is not None
         elif device == DeviceType.LCD:
             if self.lcd_display and not self.lcd_enabled:
-                with self.lock:
+                with self._lock:
                     self.lcd_enabled = self.lcd_display is not None
                     self.lcd_display.clear()
                     self.lcd_display.backlight(True)
@@ -235,7 +235,7 @@ class Sampler(threading.Thread):
             self.sgp40_enabled = False
             self.latest_sgp = None
         elif device ==  DeviceType.LCD:
-            with self.lock:
+            with self._lock:
                 self.lcd_enabled = False
                 self.lcd_display.clear()
                 self.lcd_display.backlight(False)
