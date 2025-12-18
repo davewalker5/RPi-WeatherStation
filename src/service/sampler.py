@@ -62,6 +62,20 @@ class Sampler(threading.Thread):
                 "humidity_pct": round(humidity, 2),
             }
 
+    def _sample_and_store_bme(self):
+        timestamp, temperature, pressure, humidity = self._sample_bme_sensors()
+        self._set_latest_bme(timestamp, temperature, pressure, humidity)
+
+    def _disable_bme(self):
+        with self._lock:
+            self.bme280_enabled = False
+            self.latest_bme = None
+
+    def _enable_bme(self):
+        if self.bme280:
+            self.bme280_enabled = True
+            self._sample_and_store_bme()
+
     # --------------------------------------------------
     # VEML7700 reading capture and storage
     # --------------------------------------------------
@@ -91,6 +105,20 @@ class Sampler(threading.Thread):
                 "saturated": is_saturated
             }
 
+    def _sample_and_store_veml(self):
+        timestamp, als, white, lux, is_saturated = self._sample_veml_sensors()
+        self._set_latest_veml(timestamp, als, white, lux, is_saturated)
+
+    def _disable_veml(self):
+        with self._lock:
+            self.veml_enabled = False
+            self.latest_veml = None
+
+    def _enable_veml(self):
+        if self.veml7700:
+            self.veml7700_enabled = True
+            self._sample_and_store_veml()
+
     # --------------------------------------------------
     # SGP40 reading capture and storage
     # --------------------------------------------------
@@ -119,6 +147,48 @@ class Sampler(threading.Thread):
                 "voc_label": voc_label,
                 "voc_rating": voc_rating
             }
+
+    def _sample_and_store_sgp(self):
+        # Get the latest BME280 reading and extract the humidity and temperature for SGP40
+        # VOC index compensation
+        humidity = self.latest_bme["humidity_pct"] if self.latest_bme else 50.0
+        temperature = self.latest_bme["temperature_c"] if self.latest_bme else 25.0
+
+        # Sample the SGP40 sensors, passing in the latest values from the BM280 for humidity
+        # and temperature compensation 
+        timestamp, sraw, voc_index, voc_label, voc_rating = self._sample_sgp_sensors(humidity, temperature, capture_readings)
+        self._set_latest_sgp(timestamp, sraw, voc_index, voc_label, voc_rating)
+
+    def _disable_sgp(self):
+        with self._lock:
+            self.sgp40_enabled = False
+            self.latest_sgp = None
+
+    def _enable_sgp(self):
+        if self.sgp40:
+            self.sgp40_enabled = True
+            self._sample_and_store_sgp()
+
+    # --------------------------------------------------
+    # LCD control
+    # --------------------------------------------------
+
+    def _disable_lcd(self):
+        with self._lock:
+            self.lcd_enabled = False
+            self.lcd_display.clear()
+            self.lcd_display.backlight(False)
+
+    def _enable_lcd(self):
+        if self.lcd_display and not self.lcd_enabled:
+            with self._lock:
+                # Re-enable the LCD
+                self.lcd_enabled = True
+                self.lcd_display.clear()
+                self.lcd_display.backlight(True)
+
+                # Display the next value
+                self.lcd_display.display_next(self)
 
     # --------------------------------------------------
     # Public API
@@ -155,25 +225,15 @@ class Sampler(threading.Thread):
 
                     # Take the next set of BME280 readings and cache them as the latest readings
                     if self.bme280_enabled:
-                        timestamp, temperature, pressure, humidity = self._sample_bme_sensors()
-                        self._set_latest_bme(timestamp, temperature, pressure, humidity)
+                        self._sample_and_store_bme()
 
                     # Take the next set of VEML7700 readings and cache them as the latest readings
                     if self.veml7700_enabled:
-                        timestamp, als, white, lux, is_saturated = self._sample_veml_sensors()
-                        self._set_latest_veml(timestamp, als, white, lux, is_saturated)
+                        self._sample_and_store_veml()
 
                 # Check we have an SGP40 attached
                 if self.sgp40_enabled:
-                    # Get the latest BME280 reading and extract the humidity and temperature for SGP40
-                    # VOC index compensation
-                    humidity = self.latest_bme["humidity_pct"] if self.latest_bme else 50.0
-                    temperature = self.latest_bme["temperature_c"] if self.latest_bme else 25.0
-
-                    # Sample the SGP40 sensors, passing in the latest values from the BM280 for humidity
-                    # and temperature compensation 
-                    timestamp, sraw, voc_index, voc_label, voc_rating = self._sample_sgp_sensors(humidity, temperature, capture_readings)
-                    self._set_latest_sgp(timestamp, sraw, voc_index, voc_label, voc_rating)
+                    self._sample_and_store_sgp()
 
                 # If we've reached the display interval, display the next reading
                 if display_next_reading and self.lcd_enabled:
@@ -212,30 +272,20 @@ class Sampler(threading.Thread):
 
     def enable_device(self, device):
         if device == DeviceType.BME280:
-            self.bme280_enabled = self.bme280 is not None
+            self._enable_bme()
         elif device == DeviceType.VEML7700:
-            self.veml7700_enabled = self.veml7700 is not None
+            self._enable_veml()
         elif device == DeviceType.SGP40:
-            self.sgp40_enabled = self.sgp40 is not None
+            self.enable_sgp()
         elif device == DeviceType.LCD:
-            if self.lcd_display and not self.lcd_enabled:
-                with self._lock:
-                    self.lcd_enabled = self.lcd_display is not None
-                    self.lcd_display.clear()
-                    self.lcd_display.backlight(True)
+            self._enable_lcd()
 
     def disable_device(self, device):
         if device == DeviceType.BME280:
-            self.bme280_enabled = False
-            self.latest_bme = None
+            self._disable_bme()
         elif device ==  DeviceType.VEML7700:
-            self.veml7700_enabled = False
-            self.latest_veml = None
+            self._disable_veml()
         elif device ==  DeviceType.SGP40:
-            self.sgp40_enabled = False
-            self.latest_sgp = None
+            self._disable_sgp()
         elif device ==  DeviceType.LCD:
-            with self._lock:
-                self.lcd_enabled = False
-                self.lcd_display.clear()
-                self.lcd_display.backlight(False)
+            self._disable_lcd()
