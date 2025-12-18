@@ -24,15 +24,15 @@ class Sampler(threading.Thread):
 
     def __init__(self, bme280, veml7700, sgp40, lcd, database, sample_interval, display_interval):
         super().__init__(daemon=True)
-        self.bme280_sampler = BME280Sampler(bme280, database)
-        self.veml7700_sampler = VEML7700Sampler(veml7700, database)
-        self.sgp40_sampler = SGP40Sampler(sgp40, self.bme280_sampler, database)
+        self.stop = threading.Event()
+        self._lock = threading.Lock()
+        self.bme280_sampler = BME280Sampler(bme280, database, self._lock)
+        self.veml7700_sampler = VEML7700Sampler(veml7700, database, self._lock)
+        self.sgp40_sampler = SGP40Sampler(sgp40, self.bme280_sampler, database, self._lock)
         self.lcd_display = LCDDisplay(lcd)
         self.database = database
         self.sample_interval = sample_interval
         self.display_interval = display_interval
-        self.stop = threading.Event()
-        self._lock = threading.Lock()
 
     def run(self):
         """

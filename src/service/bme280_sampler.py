@@ -1,11 +1,14 @@
 import logging
+from contextlib import nullcontext
+
 
 class BME280Sampler:
-    def __init__(self, bme280, database):
+    def __init__(self, bme280, database, lock):
         self.database = database
         self.sensor = bme280
         self.enabled = bme280 is not None
         self.latest = None
+        self.lock = lock
 
     # --------------------------------------------------
     # BME280 reading capture and storage
@@ -20,16 +23,20 @@ class BME280Sampler:
         logging.info(f"{timestamp}  T={temperature:.2f}°C  P={pressure:.2f} hPa  H={humidity:.2f}%")
         return timestamp, temperature, pressure, humidity
 
-    def _store(self, timestamp, temperature, pressure, humidity):
+    def _store(self, timestamp, temperature, pressure, humidity, clear):
         """
         Store the latest readings
         """
-        self.latest = {
-            "time_utc": timestamp,
-            "temperature_c": round(temperature, 2),
-            "pressure_hpa": round(pressure, 2),
-            "humidity_pct": round(humidity, 2),
-        }
+        with (self.lock or nullcontext()):
+            if clear:
+                self.latest = None
+            elif self.enabled:
+                self.latest = {
+                    "time_utc": timestamp,
+                    "temperature_c": round(temperature, 2),
+                    "pressure_hpa": round(pressure, 2),
+                    "humidity_pct": round(humidity, 2),
+                }
 
     # --------------------------------------------------
     # Public API
@@ -38,7 +45,7 @@ class BME280Sampler:
     def sample_and_store(self):
         if self.sensor and self.enabled:
             timestamp, temperature, pressure, humidity = self._sample()
-            self._store(timestamp, temperature, pressure, humidity)
+            self._store(timestamp, temperature, pressure, humidity, False)
 
     @property
     def latest_reading(self):
@@ -46,7 +53,7 @@ class BME280Sampler:
 
     def disable(self):
         self.enabled = False
-        self.latest = None
+        self._store(None, None, None, None, True)
 
     def enable(self):
         self.enabled = self.sensor is not None

@@ -1,14 +1,16 @@
 import logging
+from contextlib import nullcontext
 import datetime as dt
 
 
 class SGP40Sampler:
-    def __init__(self, sgp40, bme280_sampler, database):
+    def __init__(self, sgp40, bme280_sampler, database, lock):
         self.database = database
         self.sensor = sgp40
         self.bme280_sampler = bme280_sampler
         self.enabled = sgp40 is not None
         self.latest = None
+        self.lock = lock
 
     # --------------------------------------------------
     # SGP40 reading capture and storage
@@ -34,19 +36,23 @@ class SGP40Sampler:
 
         return timestamp, sraw, voc_index, voc_label, voc_rating, temperature, humidity
 
-    def _store(self, timestamp, sraw, voc_index, voc_label, voc_rating, temperature, humidity):
+    def _store(self, timestamp, sraw, voc_index, voc_label, voc_rating, temperature, humidity, clear):
         """
         Store the latest SGP40 readings
         """
-        self.latest = {
-            "time_utc": timestamp,
-            "sraw": sraw,
-            "voc_index": voc_index,
-            "voc_label": voc_label,
-            "voc_rating": voc_rating,
-            "temperature_c": temperature,
-            "humidity_pc": humidity
-        }
+        with (self.lock or nullcontext()):
+            if clear:
+                self.latest = None
+            elif self.enabled:
+                self.latest = {
+                    "time_utc": timestamp,
+                    "sraw": sraw,
+                    "voc_index": voc_index,
+                    "voc_label": voc_label,
+                    "voc_rating": voc_rating,
+                    "temperature_c": temperature,
+                    "humidity_pc": humidity
+                }
 
     # --------------------------------------------------
     # Public API
@@ -55,7 +61,7 @@ class SGP40Sampler:
     def sample_and_store(self, capture_readings):
         if self.sensor and self.enabled:
             timestamp, sraw, voc_index, voc_label, voc_rating, temperature, humidity = self._sample(capture_readings)
-            self._store(timestamp, sraw, voc_index, voc_label, voc_rating, temperature, humidity)
+            self._store(timestamp, sraw, voc_index, voc_label, voc_rating, temperature, humidity, False)
 
     @property
     def latest_reading(self):
@@ -63,7 +69,7 @@ class SGP40Sampler:
 
     def disable(self):
         self.enabled = False
-        self.latest = None
+        self._store(None, None, None, None, None, None, None, True)
 
     def enable(self):
         self.enabled = self.sensor is not None
