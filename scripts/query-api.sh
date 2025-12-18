@@ -26,9 +26,9 @@ done
 # Define the API endpoints to be tested
 endpoints=(
   "health"
-  "bme"
-  "veml"
-  "sgp"
+  "bme/latest"
+  "veml/latest"
+  "sgp/latest"
 )
 
 # Iterate over the endpoints
