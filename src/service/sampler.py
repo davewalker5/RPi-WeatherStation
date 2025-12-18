@@ -276,7 +276,7 @@ class Sampler(threading.Thread):
         elif device == DeviceType.VEML7700:
             self._enable_veml()
         elif device == DeviceType.SGP40:
-            self.enable_sgp()
+            self._enable_sgp()
         elif device == DeviceType.LCD:
             self._enable_lcd()
 
