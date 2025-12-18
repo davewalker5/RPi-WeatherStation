@@ -71,7 +71,7 @@ class Sampler(threading.Thread):
                 self.sgp40_sampler.sample_and_store(capture_readings)
 
                 # If we've reached the display interval, display the next reading
-                if display_next_reading and self.lcd_enabled:
+                if display_next_reading:
                     with self._lock:
                         display_counter = 0
                         self.lcd_display.display_next(self)

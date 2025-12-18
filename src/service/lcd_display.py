@@ -94,7 +94,6 @@ class LCDDisplay:
 
     def enable(self):
         if self.lcd and not self.enabled:
-            # Re-enable the LCD
             self.enabled = True
             self.lcd.clear()
             self.lcd.backlight(True)
