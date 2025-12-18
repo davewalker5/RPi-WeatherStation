@@ -22,7 +22,6 @@ def _sig_handler(signum, frame):
 def main():
     ap = argparse.ArgumentParser(description="Raspberry Pi Weather Service")
     ap.add_argument("--db", default=None, help="optional SQLite path to enable /api/last")
-    ap.add_argument("--no-lcd", action="store_true", help="Suppress output to the LCD display")
     args = ap.parse_args()
 
     # Show the argument values
@@ -41,10 +40,7 @@ def main():
     settings = AppSettings(AppSettings.default_settings_file())
     bus = SMBus(settings.settings["bus_number"])
     factory = DeviceFactory(bus, i2c_msg, VocAlgorithm(), settings)
-    bme280 = factory.create_device(DeviceType.BME280)
-    veml7700 = factory.create_device(DeviceType.VEML7700)
-    sgp40 = factory.create_device(DeviceType.SGP40)
-    lcd = factory.create_device(DeviceType.LCD) if not args.no_lcd else None
+    devices = factory.create_all_devices()
 
     # Create the database access wrapper
     database = factory.create_database(args.db)
@@ -53,7 +49,7 @@ def main():
     # Create and start the sampler
     sample_interval = settings.settings["sample_interval"]
     display_interval = settings.settings["display_interval"]
-    sampler = Sampler(bme280, veml7700, sgp40, lcd, database, sample_interval, display_interval)
+    sampler = Sampler(devices, database, sample_interval, display_interval)
     sampler.start()
 
     # Set up the request handler

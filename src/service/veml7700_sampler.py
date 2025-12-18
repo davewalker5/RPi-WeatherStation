@@ -3,10 +3,10 @@ import threading
 
 
 class VEML7700Sampler:
-    def __init__(self, veml7700, database):
+    def __init__(self, veml7700, enabled, database):
         self.database = database
         self.sensor = veml7700
-        self.enabled = veml7700 is not None
+        self.enabled = veml7700 is not None and enabled
         self.latest = None
         self.lock = threading.Lock()
 
@@ -61,3 +61,11 @@ class VEML7700Sampler:
 
     def enable(self):
         self.enabled = self.sensor is not None
+
+    @property
+    def is_enabled(self):
+        return self.enabled
+
+    @property
+    def is_available(self):
+        return self.sensor is not None

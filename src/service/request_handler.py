@@ -11,7 +11,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     ROUTES = {
         HttpMethod.GET: {
-            "/api/health" : "_health",
+            "/api/health": "_health",
+            "/api/status": "_status",
             "/api/bme/latest": "_latest_bme_readings",
             "/api/veml/latest": "_latest_veml_readings",
             "/api/sgp/latest": "_latest_sgp_readings",
@@ -58,6 +59,13 @@ class RequestHandler(BaseHTTPRequestHandler):
         """
         timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
         return self._json(200, {"status": "ok", "time": timestamp})
+
+    def _status(self):
+        """
+        Handle a request for the status of all the devices
+        """
+        status = self.sampler.get_device_status()
+        return self._json(200, status)
 
     def _latest_bme_readings(self):
         """

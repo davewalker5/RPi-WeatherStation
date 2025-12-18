@@ -3,10 +3,10 @@ import threading
 
 
 class BME280Sampler:
-    def __init__(self, bme280, database):
+    def __init__(self, bme280, enabled, database):
         self.database = database
         self.sensor = bme280
-        self.enabled = bme280 is not None
+        self.enabled = bme280 is not None and enabled
         self.latest = None
         self.lock = threading.Lock()
 
@@ -57,3 +57,11 @@ class BME280Sampler:
 
     def enable(self):
         self.enabled = self.sensor is not None
+
+    @property
+    def is_enabled(self):
+        return self.enabled
+
+    @property
+    def is_available(self):
+        return self.sensor is not None

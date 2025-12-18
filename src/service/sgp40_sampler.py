@@ -4,11 +4,11 @@ import datetime as dt
 
 
 class SGP40Sampler:
-    def __init__(self, sgp40, bme280_sampler, database):
+    def __init__(self, sgp40, enabled, bme280_sampler, database):
         self.database = database
         self.sensor = sgp40
         self.bme280_sampler = bme280_sampler
-        self.enabled = sgp40 is not None
+        self.enabled = sgp40 is not None and enabled
         self.latest = None
         self.lock = threading.Lock()
 
@@ -73,3 +73,11 @@ class SGP40Sampler:
 
     def enable(self):
         self.enabled = self.sensor is not None
+
+    @property
+    def is_enabled(self):
+        return self.enabled
+
+    @property
+    def is_available(self):
+        return self.sensor is not None

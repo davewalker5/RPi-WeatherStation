@@ -6,10 +6,10 @@ DEGREE = chr(223)
 
 
 class LCDDisplay:
-    def __init__(self, lcd):
+    def __init__(self, lcd, enabled):
         # Capture the LCD display wrappe
         self.lcd = lcd
-        self.enabled = lcd is not None
+        self.enabled = lcd is not None and enabled
         self.lock = threading.Lock()
 
         # Define the callback functions to display values
@@ -23,6 +23,11 @@ class LCDDisplay:
 
         # Initialise the callback index
         self.index = 0
+
+        # If the LCD isn't enabled to start with, switch it off as it will likely be in the on
+        # state on startup
+        if not enabled:
+            self.disable()
 
     def _display_reading(self, values, member, label, units):
         # Check there's a reading to display
@@ -107,3 +112,11 @@ class LCDDisplay:
                 self.enabled = True
                 self.lcd.clear()
                 self.lcd.backlight_on()
+
+    @property
+    def is_enabled(self):
+        return self.enabled
+
+    @property
+    def is_available(self):
+        return self.lcd is not None

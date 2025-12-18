@@ -52,6 +52,24 @@ class DeviceFactory:
         # Return the device instance
         return device
 
+    def create_all_devices(self):
+        devices = {}
+
+        # Iterate over all possible device types
+        for device_type in DeviceType:
+            # Exclude the MUX
+            if device_type != DeviceType.MUX:
+                # Create the device and construct a dictionary containing it and it's enabled state
+                # Enabled depends on successful creation of the device and the initial state in the
+                # application settings
+                device = self.create_device(device_type)
+                devices[device_type] = {
+                    "device": device,
+                    "enabled": device and self.app_settings.devices[device_type]["initial_state"] 
+                }
+        
+        return devices
+
     def create_database(self, database_path):
         # Extract the database and persistence properties from the settings
         retention = self.app_settings.settings["retention"]

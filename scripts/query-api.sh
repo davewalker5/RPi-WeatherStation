@@ -30,6 +30,7 @@ done
 # Define the API endpoints to be tested
 endpoints=(
   "health"
+  "status"
   "bme/latest"
   "veml/latest"
   "sgp/latest"
@@ -40,7 +41,7 @@ for i in "${!endpoints[@]}"; do
     url="http://${PI_HOSTNAME}:${PI_PORT}/api/${endpoints[$i]}"
     echo
     echo "Calling ${url} ..."
-    curl "$url"
+    curl "$url" | jq .
     echo
 done
 

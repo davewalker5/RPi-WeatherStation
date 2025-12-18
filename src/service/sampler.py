@@ -15,20 +15,16 @@ from .lcd_display import LCDDisplay
 
 
 class Sampler(threading.Thread):
-    bme280: BME280 = None
-    veml7700: VEML7700 = None
-    sgp40: SGP40 = None
-    database: Database = None
     sample_interval: int = None
     display_interval: int = None
 
-    def __init__(self, bme280, veml7700, sgp40, lcd, database, sample_interval, display_interval):
+    def __init__(self, devices, database, sample_interval, display_interval):
         super().__init__(daemon=True)
         self.stop = threading.Event()
-        self.bme280_sampler = BME280Sampler(bme280, database)
-        self.veml7700_sampler = VEML7700Sampler(veml7700, database)
-        self.sgp40_sampler = SGP40Sampler(sgp40, self.bme280_sampler, database)
-        self.lcd_display = LCDDisplay(lcd)
+        self.bme280_sampler = BME280Sampler(devices[DeviceType.BME280]["device"], devices[DeviceType.BME280]["enabled"], database)
+        self.veml7700_sampler = VEML7700Sampler(devices[DeviceType.VEML7700]["device"], devices[DeviceType.VEML7700]["enabled"], database)
+        self.sgp40_sampler = SGP40Sampler(devices[DeviceType.SGP40]["device"], devices[DeviceType.SGP40]["enabled"], self.bme280_sampler, database)
+        self.lcd_display = LCDDisplay(devices[DeviceType.LCD]["device"], devices[DeviceType.LCD]["enabled"])
         self.database = database
         self.sample_interval = sample_interval
         self.display_interval = display_interval
@@ -103,6 +99,26 @@ class Sampler(threading.Thread):
         """
         latest_reading = self.sgp40_sampler.latest_reading
         return dict(latest_reading) if latest_reading else None
+
+    def get_device_status(self):
+        return {
+            DeviceType.BME280: {
+                "enabled": self.bme280_sampler.is_enabled,
+                "available": self.bme280_sampler.is_available
+            },
+            DeviceType.VEML7700: {
+                "enabled": self.veml7700_sampler.is_enabled,
+                "available": self.veml7700_sampler.is_available
+            },
+            DeviceType.SGP40: {
+                "enabled": self.sgp40_sampler.is_enabled,
+                "available": self.sgp40_sampler.is_available
+            },
+            DeviceType.LCD: {
+                "enabled": self.lcd_display.is_enabled,
+                "available": self.lcd_display.is_available
+            }
+        }
 
     def enable_device(self, device):
         if device == DeviceType.BME280:
