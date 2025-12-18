@@ -30,6 +30,7 @@ done
 # Define the API endpoints to be tested
 endpoints=(
   "health"
+  "status"
   "bme/latest"
   "veml/latest"
   "sgp/latest"

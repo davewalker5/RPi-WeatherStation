@@ -64,8 +64,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         """
         Handle a request for the status of all the devices
         """
-        timestamp = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat() + "Z"
-        return self._json(200, {"status": "ok", "time": timestamp})
+        status = self.sampler.get_device_status()
+        return self._json(200, status)
 
     def _latest_bme_readings(self):
         """
