@@ -9,7 +9,7 @@ from sensors import SGP40
 from registry import DeviceType
 from db import Database
 from .bme280_sampler import BME280Sampler
-from .veml770_sampler import VEML7700Sampler
+from .veml7700_sampler import VEML7700Sampler
 from .sgp40_sampler import SGP40Sampler
 from .lcd_display import LCDDisplay
 
