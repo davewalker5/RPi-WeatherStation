@@ -213,36 +213,30 @@ class Sampler(threading.Thread):
 
     def enable_device(self, device):
         with self._lock:
-            match device:
-                case DeviceType.BME280:
-                    self.bme280_enabled = self.bme280 is not None
-                case DeviceType.VEML7700:
-                    self.veml7700_enabled = self.veml7700 is not None
-                case DeviceType.SGP40:
-                    self.sgp40_enabled = self.sgp40 is not None
-                case DeviceType.LCD:
-                    if self.lcd_display and not self.lcd_enabled:
-                        self.lcd_enabled = self.lcd_display is not None
-                        self.lcd_display.clear()
-                        self.lcd_display.backlight(True)
-                case _:
-                    pass
+            if device == DeviceType.BME280:
+                self.bme280_enabled = self.bme280 is not None
+            elif device == DeviceType.VEML7700:
+                self.veml7700_enabled = self.veml7700 is not None
+            elif device == DeviceType.SGP40:
+                self.sgp40_enabled = self.sgp40 is not None
+            elif device == DeviceType.LCD:
+                if self.lcd_display and not self.lcd_enabled:
+                    self.lcd_enabled = self.lcd_display is not None
+                    self.lcd_display.clear()
+                    self.lcd_display.backlight(True)
 
     def disable_device(self, device):
         with self._lock:
-            match device:
-                case DeviceType.BME280:
-                    self.bme280_enabled = False
-                    self.latest_bme = None
-                case DeviceType.VEML7700:
-                    self.veml7700_enabled = False
-                    self.latest_veml = None
-                case DeviceType.SGP40:
-                    self.sgp40_enabled = False
-                    self.latest_sgp = None
-                case DeviceType.LCD:
-                    self.lcd_enabled = False
-                    self.lcd_display.clear()
-                    self.lcd_display.backlight(False)
-                case _:
-                    pass
+            if device == DeviceType.BME280:
+                self.bme280_enabled = False
+                self.latest_bme = None
+            elif device ==  DeviceType.VEML7700:
+                self.veml7700_enabled = False
+                self.latest_veml = None
+            elif device ==  DeviceType.SGP40:
+                self.sgp40_enabled = False
+                self.latest_sgp = None
+            elif device ==  DeviceType.LCD:
+                self.lcd_enabled = False
+                self.lcd_display.clear()
+                self.lcd_display.backlight(False)
