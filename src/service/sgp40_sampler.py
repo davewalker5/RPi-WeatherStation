@@ -38,7 +38,7 @@ class SGP40Sampler:
         """
         Store the latest SGP40 readings
         """
-        self.latest_sgp = {
+        self.latest = {
             "time_utc": timestamp,
             "sraw": sraw,
             "voc_index": voc_index,

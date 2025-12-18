@@ -25,7 +25,7 @@ class VEML7700Sampler:
         """
         Store the latest readings
         """
-        self.latest_veml = {
+        self.latest = {
             "time_utc": timestamp,
             "gain": self.sensor.gain,
             "integration_time_ms": self.sensor.integration_time_ms,
