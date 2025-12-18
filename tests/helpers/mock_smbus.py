@@ -53,6 +53,9 @@ class MockSMBus:
 
     # --- Mocks for the SGP40 -------------------------------------
 
+    def write_quick(self, addr):
+        pass
+
     def i2c_rdwr(self, *msgs):
         """
         Record I2C transactions. For reads, use the queue data to satisfy the transaction

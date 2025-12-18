@@ -1,6 +1,5 @@
 import pytest
 from registry import AppSettings, DeviceFactory, DeviceType
-from i2c import I2CDevice
 from service import VEML7700Sampler
 from helpers import MockSMBus, MockI2CMsg, MockDatabase
 
