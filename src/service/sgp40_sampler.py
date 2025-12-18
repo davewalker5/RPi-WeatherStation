@@ -52,9 +52,9 @@ class SGP40Sampler:
     # Public API
     # --------------------------------------------------
 
-    def sample_and_store(self):
+    def sample_and_store(self, capture_readings):
         if self.sensor and self.enabled:
-            timestamp, sraw, voc_index, voc_label, voc_rating, temperature, humidity = self._sample()
+            timestamp, sraw, voc_index, voc_label, voc_rating, temperature, humidity = self._sample(capture_readings)
             self._store(timestamp, sraw, voc_index, voc_label, voc_rating, temperature, humidity)
 
     @property

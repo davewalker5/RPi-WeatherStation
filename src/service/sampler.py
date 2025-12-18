@@ -28,6 +28,7 @@ class Sampler(threading.Thread):
         self.veml7700_sampler = VEML7700Sampler(veml7700, database)
         self.sgp40_sampler = SGP40Sampler(sgp40, self.bme280_sampler, database)
         self.lcd_display = LCDDisplay(lcd)
+        self.database = database
         self.sample_interval = sample_interval
         self.display_interval = display_interval
         self.stop = threading.Event()
@@ -45,7 +46,7 @@ class Sampler(threading.Thread):
         display_counter = self.display_interval - 1
         while not self.stop.is_set():
             try:
-                # Increment the reporting counter
+                # Increment the sampling counter
                 capture_counter += 1
                 capture_readings = capture_counter == self.sample_interval
 
@@ -67,7 +68,7 @@ class Sampler(threading.Thread):
                     self.veml7700_sampler.sample_and_store()
 
                 # Take the next set of SGP40 readings
-                self.sgp40_sampler.sample_and_store()
+                self.sgp40_sampler.sample_and_store(capture_readings)
 
                 # If we've reached the display interval, display the next reading
                 if display_next_reading and self.lcd_enabled:
