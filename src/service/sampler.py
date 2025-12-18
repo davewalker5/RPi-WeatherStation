@@ -148,7 +148,7 @@ class Sampler(threading.Thread):
                 "voc_rating": voc_rating
             }
 
-    def _sample_and_store_sgp(self):
+    def _sample_and_store_sgp(self, capture_readings):
         # Get the latest BME280 reading and extract the humidity and temperature for SGP40
         # VOC index compensation
         humidity = self.latest_bme["humidity_pct"] if self.latest_bme else 50.0
@@ -167,7 +167,7 @@ class Sampler(threading.Thread):
     def _enable_sgp(self):
         if self.sgp40:
             self.sgp40_enabled = True
-            self._sample_and_store_sgp()
+            self._sample_and_store_sgp(True)
 
     # --------------------------------------------------
     # LCD control
@@ -233,7 +233,7 @@ class Sampler(threading.Thread):
 
                 # Check we have an SGP40 attached
                 if self.sgp40_enabled:
-                    self._sample_and_store_sgp()
+                    self._sample_and_store_sgp(capture_readings)
 
                 # If we've reached the display interval, display the next reading
                 if display_next_reading and self.lcd_enabled:
