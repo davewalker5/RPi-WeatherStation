@@ -79,3 +79,12 @@ class LCDDisplay:
 
         except Exception as ex:
             logging.warning("Display error: %s", ex)
+
+    def clear(self):
+        self.lcd.clear()
+
+    def backlight(self, state):
+        if state:
+            self.lcd.backlight_on()
+        else:
+            self.lcd.backlight_off()
