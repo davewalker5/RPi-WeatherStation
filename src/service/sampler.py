@@ -25,11 +25,11 @@ class Sampler(threading.Thread):
     def __init__(self, bme280, veml7700, sgp40, lcd, database, sample_interval, display_interval):
         super().__init__(daemon=True)
         self.stop = threading.Event()
-        self._lock = threading.Lock()
-        self.bme280_sampler = BME280Sampler(bme280, database, self._lock)
-        self.veml7700_sampler = VEML7700Sampler(veml7700, database, self._lock)
-        self.sgp40_sampler = SGP40Sampler(sgp40, self.bme280_sampler, database, self._lock)
-        self.lcd_display = LCDDisplay(lcd)
+        self.lock = threading.Lock()
+        self.bme280_sampler = BME280Sampler(bme280, database, self.lock)
+        self.veml7700_sampler = VEML7700Sampler(veml7700, database, self.lock)
+        self.sgp40_sampler = SGP40Sampler(sgp40, self.bme280_sampler, database, self.lock)
+        self.lcd_display = LCDDisplay(lcd, self.lock)
         self.database = database
         self.sample_interval = sample_interval
         self.display_interval = display_interval
@@ -72,7 +72,7 @@ class Sampler(threading.Thread):
 
                 # If we've reached the display interval, display the next reading
                 if display_next_reading:
-                    with self._lock:
+                    with self.lock:
                         display_counter = 0
                         self.lcd_display.display_next(self)
 
@@ -114,7 +114,7 @@ class Sampler(threading.Thread):
         elif device == DeviceType.SGP40:
             self.sgp40_sampler.enable()
         elif device == DeviceType.LCD:
-            with self._lock:
+            with self.lock:
                 self.lcd_display.enable()
 
     def disable_device(self, device):
@@ -125,5 +125,5 @@ class Sampler(threading.Thread):
         elif device ==  DeviceType.SGP40:
             self.sgp40_sampler.disable()
         elif device ==  DeviceType.LCD:
-            with self._lock:
+            with self.lock:
                 self.lcd_display.disable()

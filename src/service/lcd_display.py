@@ -1,15 +1,17 @@
 
 import logging
 import datetime
+from contextlib import nullcontext
 
 DEGREE = chr(223)
 
 
 class LCDDisplay:
-    def __init__(self, lcd):
+    def __init__(self, lcd, lock):
         # Capture the LCD display wrappe
         self.lcd = lcd
         self.enabled = lcd is not None
+        self.lock = lock
 
         # Define the callback functions to display values
         self.functions = [
@@ -66,34 +68,44 @@ class LCDDisplay:
         if not self.enabled:
             return
 
-        try:
-            # Loop until we've found and displayed a reading for a sensor. This will loop forever
-            # if there are no sensors attached but then a weather station with no sensors isn't
-            # much use!
-            while True:
-                # Try to display the reading for the sensor at the current index
-                have_reading = self.functions[self.index](sampler)
+        with self.lock:
+            try:
+                # Loop until we've found and displayed a reading for a sensor
+                sensor_counter = 0
+                while True:
+                    # Count the passes through this loop and break out if we've tried them all and there's
+                    # nothing there
+                    sensor_counter = sensor_counter + 1
+                    if sensor_counter >= len(self.functions):
+                        break
 
-                # Move on to the next index
-                self.index = self.index + 1
-                if self.index >= len(self.functions):
-                    self.index = 0
+                    # Try to display the reading for the sensor at the current index
+                    with (self.lock or nullcontext()):
+                        if self.enabled:
+                            have_reading = self.functions[self.index](sampler)
 
-                # If we got a reading, break out
-                if have_reading:
-                    break
+                    # Move on to the next index
+                    self.index = self.index + 1
+                    if self.index >= len(self.functions):
+                        self.index = 0
 
-        except Exception as ex:
-            logging.warning("Display error: %s", ex)
+                    # If we got a reading, break out
+                    if have_reading:
+                        break
+
+            except Exception as ex:
+                logging.warning("Display error: %s", ex)
 
     def disable(self):
         self.enabled = False
         if self.lcd:
-            self.lcd.clear()
-            self.lcd.backlight(False)
+            with (self.lock or nullcontext()):
+                self.lcd.clear()
+                self.lcd.backlight_off()
 
     def enable(self):
         if self.lcd and not self.enabled:
-            self.enabled = True
-            self.lcd.clear()
-            self.lcd.backlight(True)
+            with (self.lock or nullcontext()):
+                self.enabled = True
+                self.lcd.clear()
+                self.lcd.backlight_on()
