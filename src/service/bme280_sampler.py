@@ -1,14 +1,14 @@
 import logging
-from contextlib import nullcontext
+import threading
 
 
 class BME280Sampler:
-    def __init__(self, bme280, database, lock):
+    def __init__(self, bme280, database):
         self.database = database
         self.sensor = bme280
         self.enabled = bme280 is not None
         self.latest = None
-        self.lock = lock
+        self.lock = threading.Lock()
 
     # --------------------------------------------------
     # BME280 reading capture and storage
@@ -27,7 +27,7 @@ class BME280Sampler:
         """
         Store the latest readings
         """
-        with (self.lock or nullcontext()):
+        with self.lock:
             if clear:
                 self.latest = None
             elif self.enabled:

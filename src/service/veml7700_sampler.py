@@ -1,14 +1,14 @@
 import logging
-from contextlib import nullcontext
+import threading
 
 
 class VEML7700Sampler:
-    def __init__(self, veml7700, database, lock):
+    def __init__(self, veml7700, database):
         self.database = database
         self.sensor = veml7700
         self.enabled = veml7700 is not None
         self.latest = None
-        self.lock = lock
+        self.lock = threading.Lock()
 
     # --------------------------------------------------
     # VEML7700 reading capture and storage
@@ -28,7 +28,7 @@ class VEML7700Sampler:
         """
         Store the latest readings
         """
-        with (self.lock or nullcontext()):
+        with self.lock:
             if clear:
                 self.latest = None
             elif self.enabled:

@@ -25,11 +25,10 @@ class Sampler(threading.Thread):
     def __init__(self, bme280, veml7700, sgp40, lcd, database, sample_interval, display_interval):
         super().__init__(daemon=True)
         self.stop = threading.Event()
-        self.lock = threading.Lock()
-        self.bme280_sampler = BME280Sampler(bme280, database, self.lock)
-        self.veml7700_sampler = VEML7700Sampler(veml7700, database, self.lock)
-        self.sgp40_sampler = SGP40Sampler(sgp40, self.bme280_sampler, database, self.lock)
-        self.lcd_display = LCDDisplay(lcd, self.lock)
+        self.bme280_sampler = BME280Sampler(bme280, database)
+        self.veml7700_sampler = VEML7700Sampler(veml7700, database)
+        self.sgp40_sampler = SGP40Sampler(sgp40, self.bme280_sampler, database)
+        self.lcd_display = LCDDisplay(lcd)
         self.database = database
         self.sample_interval = sample_interval
         self.display_interval = display_interval
@@ -72,9 +71,8 @@ class Sampler(threading.Thread):
 
                 # If we've reached the display interval, display the next reading
                 if display_next_reading:
-                    with self.lock:
-                        display_counter = 0
-                        self.lcd_display.display_next(self)
+                    display_counter = 0
+                    self.lcd_display.display_next(self)
 
             except Exception as ex:
                 logging.warning("Sampler error: %s", ex)
@@ -114,8 +112,7 @@ class Sampler(threading.Thread):
         elif device == DeviceType.SGP40:
             self.sgp40_sampler.enable()
         elif device == DeviceType.LCD:
-            with self.lock:
-                self.lcd_display.enable()
+            self.lcd_display.enable()
 
     def disable_device(self, device):
         if device == DeviceType.BME280:
@@ -125,5 +122,4 @@ class Sampler(threading.Thread):
         elif device ==  DeviceType.SGP40:
             self.sgp40_sampler.disable()
         elif device ==  DeviceType.LCD:
-            with self.lock:
-                self.lcd_display.disable()
+            self.lcd_display.disable()

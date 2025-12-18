@@ -1,17 +1,17 @@
 
 import logging
 import datetime
-from contextlib import nullcontext
+import threading
 
 DEGREE = chr(223)
 
 
 class LCDDisplay:
-    def __init__(self, lcd, lock):
+    def __init__(self, lcd):
         # Capture the LCD display wrappe
         self.lcd = lcd
         self.enabled = lcd is not None
-        self.lock = lock
+        self.lock = threading.Lock()
 
         # Define the callback functions to display values
         self.functions = [
@@ -80,7 +80,7 @@ class LCDDisplay:
                         break
 
                     # Try to display the reading for the sensor at the current index
-                    with (self.lock or nullcontext()):
+                    with self.lock:
                         if self.enabled:
                             have_reading = self.functions[self.index](sampler)
 
@@ -99,13 +99,13 @@ class LCDDisplay:
     def disable(self):
         self.enabled = False
         if self.lcd:
-            with (self.lock or nullcontext()):
+            with self.lock:
                 self.lcd.clear()
                 self.lcd.backlight_off()
 
     def enable(self):
         if self.lcd and not self.enabled:
-            with (self.lock or nullcontext()):
+            with self.lock:
                 self.enabled = True
                 self.lcd.clear()
                 self.lcd.backlight_on()

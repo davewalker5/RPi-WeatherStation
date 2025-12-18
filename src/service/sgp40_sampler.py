@@ -1,16 +1,16 @@
 import logging
-from contextlib import nullcontext
+import threading
 import datetime as dt
 
 
 class SGP40Sampler:
-    def __init__(self, sgp40, bme280_sampler, database, lock):
+    def __init__(self, sgp40, bme280_sampler, database):
         self.database = database
         self.sensor = sgp40
         self.bme280_sampler = bme280_sampler
         self.enabled = sgp40 is not None
         self.latest = None
-        self.lock = lock
+        self.lock = threading.Lock()
 
     # --------------------------------------------------
     # SGP40 reading capture and storage
@@ -40,7 +40,7 @@ class SGP40Sampler:
         """
         Store the latest SGP40 readings
         """
-        with (self.lock or nullcontext()):
+        with self.lock:
             if clear:
                 self.latest = None
             elif self.enabled:
