@@ -9,6 +9,7 @@ class LCDDisplay:
     def __init__(self, lcd):
         # Capture the LCD display wrappe
         self.lcd = lcd
+        self.enabled = lcd is not None
 
         # Define the callback functions to display values
         self.functions = [
@@ -60,6 +61,11 @@ class LCDDisplay:
         """
         Show the next reading in the sequence
         """
+
+        # Do nothing if the display's not enabled
+        if not self.enabled:
+            return
+
         try:
             # Loop until we've found and displayed a reading for a sensor. This will loop forever
             # if there are no sensors attached but then a weather station with no sensors isn't
@@ -80,11 +86,15 @@ class LCDDisplay:
         except Exception as ex:
             logging.warning("Display error: %s", ex)
 
-    def clear(self):
-        self.lcd.clear()
+    def disable(self):
+        self.enabled = False
+        if self.lcd:
+            self.lcd.clear()
+            self.lcd.backlight(False)
 
-    def backlight(self, state):
-        if state:
-            self.lcd.backlight_on()
-        else:
-            self.lcd.backlight_off()
+    def enable(self):
+        if self.lcd and not self.enabled:
+            # Re-enable the LCD
+            self.enabled = True
+            self.lcd.clear()
+            self.lcd.backlight(True)

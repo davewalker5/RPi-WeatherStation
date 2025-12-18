@@ -4,7 +4,7 @@ import threading
 import os
 from http.server import ThreadingHTTPServer
 from registry import AppSettings, DeviceFactory, DeviceType
-from service import RequestHandler, Sampler, LCDDisplay
+from service import RequestHandler, Sampler
 from smbus2 import SMBus, i2c_msg
 from sensirion_gas_index_algorithm.voc_algorithm import VocAlgorithm
 
@@ -37,19 +37,14 @@ def main():
     # Install signal handlers for graceful stop
     signal.signal(signal.SIGTERM, _sig_handler)
 
-    # Load the configuration settings, create the bus and the factory and construct the sensor wrappers
+    # Load the configuration settings, create the bus and the factory and construct the device wrappers
     settings = AppSettings(AppSettings.default_settings_file())
     bus = SMBus(settings.settings["bus_number"])
     factory = DeviceFactory(bus, i2c_msg, VocAlgorithm(), settings)
     bme280 = factory.create_device(DeviceType.BME280)
     veml7700 = factory.create_device(DeviceType.VEML7700)
     sgp40 = factory.create_device(DeviceType.SGP40)
-
-    # Create the LCD display wrapper
-    if not args.no_lcd:
-        lcd = factory.create_device(DeviceType.LCD)
-        if lcd:
-            display = LCDDisplay(lcd)
+    lcd = factory.create_device(DeviceType.LCD) if not args.no_lcd else None
 
     # Create the database access wrapper
     database = factory.create_database(args.db)
@@ -58,7 +53,7 @@ def main():
     # Create and start the sampler
     sample_interval = settings.settings["sample_interval"]
     display_interval = settings.settings["display_interval"]
-    sampler = Sampler(bme280, veml7700, sgp40, display, database, sample_interval, display_interval)
+    sampler = Sampler(bme280, veml7700, sgp40, lcd, database, sample_interval, display_interval)
     sampler.start()
 
     # Set up the request handler
