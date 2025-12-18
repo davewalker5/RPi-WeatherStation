@@ -25,16 +25,15 @@ class VEML7700Sampler:
         """
         Store the latest readings
         """
-        with self._lock:
-            self.latest_veml = {
-                "time_utc": timestamp,
-                "gain": self.sensor.gain,
-                "integration_time_ms": self.sensor.integration_time_ms,
-                "als": als,
-                "white": white,
-                "illuminance_lux": round(lux, 2),
-                "saturated": is_saturated
-            }
+        self.latest_veml = {
+            "time_utc": timestamp,
+            "gain": self.sensor.gain,
+            "integration_time_ms": self.sensor.integration_time_ms,
+            "als": als,
+            "white": white,
+            "illuminance_lux": round(lux, 2),
+            "saturated": is_saturated
+        }
 
     # --------------------------------------------------
     # Public API
