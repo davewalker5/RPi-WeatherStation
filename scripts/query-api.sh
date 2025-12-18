@@ -40,7 +40,7 @@ for i in "${!endpoints[@]}"; do
     url="http://${PI_HOSTNAME}:${PI_PORT}/api/${endpoints[$i]}"
     echo
     echo "Calling ${url} ..."
-    curl "$url"
+    curl "$url" | jq .
     echo
 done
 
