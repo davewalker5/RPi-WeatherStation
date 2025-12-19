@@ -44,7 +44,7 @@ class MockLCD:
 
     @log_method_call
     def clear(self):
-        pass
+        self._output = []
 
     @log_method_call
     def write(self, text, line=1):
