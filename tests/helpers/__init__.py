@@ -5,6 +5,8 @@ from .mock_smbus import MockSMBus
 from .mock_i2c_msg import MockI2CMsg
 from .mock_voc_algorithm import MockVOCAlgorithm
 from .mock_database import MockDatabase
+from .mock_lcd import MockLCD
+from .mock_sampler import MockSampler
 
 
 __all__ = [
@@ -14,5 +16,7 @@ __all__ = [
     "MockSMBus",
     "MockI2CMsg",
     "MockVOCAlgorithm",
-    "MockDatabase"
+    "MockDatabase",
+    "MockLCD",
+    "MockSampler"
 ]
