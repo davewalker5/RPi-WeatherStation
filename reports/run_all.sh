@@ -13,6 +13,7 @@ declare -a exclusions=(
     "db-query-test.ipynb"
     "export.ipynb"
     "pathutils.ipynb"
+    "health.ipynb"
 )
 
 # Store the current working directory so we can restore it and change to the folder
