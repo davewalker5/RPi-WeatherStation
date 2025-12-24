@@ -6,4 +6,4 @@ cd "$PROJECT_FOLDER"
 . "$PROJECT_FOLDER/venv/bin/activate"
 
 pip freeze --local | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip3 install -U 
-pip freeze > requirements.txt
+pip list --format=freeze | cut -d= -f1 > requirements.txt
